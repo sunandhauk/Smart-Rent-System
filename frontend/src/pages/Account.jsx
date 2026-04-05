@@ -2,6 +2,32 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+const AccountAvatar = ({ userData }) => {
+  const [imageError, setImageError] = useState(false);
+  const initials = `${userData.firstName?.[0] || ""}${userData.lastName?.[0] || ""}`;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [userData.profileImage]);
+
+  if (userData.profileImage && !imageError) {
+    return (
+      <img
+        src={userData.profileImage}
+        alt={`${userData.firstName} ${userData.lastName}`}
+        className="rounded-full object-cover w-24 h-24"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="rounded-full w-full h-full bg-primary-500 text-white flex items-center justify-center text-xl font-medium">
+      {initials || "U"}
+    </div>
+  );
+};
+
 const Account = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const {
@@ -133,8 +159,8 @@ const Account = () => {
     }
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     navigate("/login");
   };
 
@@ -170,28 +196,7 @@ const Account = () => {
               <div className="p-6 text-center border-b border-neutral-200">
                 <div className="relative w-24 h-24 mx-auto mb-4">
                   {/* Display profile image or initials */}
-                  {userData.profileImage ? (
-                    <img
-                      src={userData.profileImage}
-                      alt={`${userData.firstName} ${userData.lastName}`}
-                      className="rounded-full object-cover w-24 h-24"
-                      onError={(e) => {
-                        e.onerror = null;
-                        e.target.style.display = "none";
-                        const parent = e.target.parentNode;
-                        const initials = document.createElement("div");
-                        initials.className =
-                          "rounded-full w-full h-full bg-primary-500 text-white flex items-center justify-center text-xl font-medium";
-                        initials.innerHTML = `${userData.firstName?.[0]}${userData.lastName?.[0]}`;
-                        parent.appendChild(initials);
-                      }}
-                    />
-                  ) : (
-                    <div className="rounded-full w-full h-full bg-primary-500 text-white flex items-center justify-center text-xl font-medium">
-                      {userData.firstName?.[0]}
-                      {userData.lastName?.[0]}
-                    </div>
-                  )}
+                  <AccountAvatar userData={userData} />
 
                   {/* Show either upload or delete button based on whether an image exists */}
                   {userData.profileImage &&

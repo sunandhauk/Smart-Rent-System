@@ -67,6 +67,9 @@ Thumbs.db
 *.sqlite
 *.sqlite3
 dump.rdb
+backend/mongodb-data/
+backend/mongod.out
+backend/mongod.err
 
 # Sensitive information
 **/config/secrets.*

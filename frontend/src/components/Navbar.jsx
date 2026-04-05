@@ -6,10 +6,38 @@ import NavLogo from "./navbar/NavLogo";
 import NavSearch from "./navbar/NavSearch";
 import NavProfile from "./navbar/NavProfile";
 import NavSettings from "./navbar/NavSettings";
+import { getPreferenceSnapshot } from "../utils/tenantVacancies";
+
+const UserAvatar = ({ user, sizeClass = "w-8 h-8", textClass = "text-sm" }) => {
+  const [imageError, setImageError] = useState(false);
+  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.profileImage]);
+
+  return (
+    <div
+      className={`bg-primary-500 text-white rounded-full ${sizeClass} flex items-center justify-center overflow-hidden`}
+    >
+      {user?.profileImage && !imageError ? (
+        <img
+          src={user.profileImage}
+          alt={`${user.firstName} ${user.lastName}`}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <span className={`font-medium ${textClass}`}>{initials || "U"}</span>
+      )}
+    </div>
+  );
+};
 
 const Navbar = () => {
   // State for UI controls
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isGetStartedOpen, setIsGetStartedOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [recentSearches, setRecentSearches] = useState(() => {
@@ -18,9 +46,13 @@ const Navbar = () => {
   });
   const [isSettingsMenuOpen, setIsSettingsMenuOpen] = useState(false);
   const [isSettingsLoading, setIsSettingsLoading] = useState(false);
+  const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+  const [preferenceSnapshot, setPreferenceSnapshot] = useState(getPreferenceSnapshot);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const searchRef = useRef(null);
   const settingsRef = useRef(null);
+  const preferencesRef = useRef(null);
+  const getStartedRef = useRef(null);
   const menuRef = useRef(null);
   const { pathname } = useLocation();
   const location = useLocation();
@@ -42,15 +74,6 @@ const Navbar = () => {
     isLoadingRates,
   } = useAppSettings();
 
-  // Popular suggestions
-  const suggestions = [
-    "New York",
-    "Los Angeles",
-    "Miami",
-    "Chicago",
-    "San Francisco",
-  ];
-
   // Available currencies
   const currencies = [
     { code: "USD", symbol: "$", name: "US Dollar" },
@@ -66,6 +89,8 @@ const Navbar = () => {
   useEffect(() => {
     setIsProfileMenuOpen(false);
     setIsSettingsMenuOpen(false);
+    setIsGetStartedOpen(false);
+    setIsPreferencesOpen(false);
   }, [location.pathname]);
 
   // Handle clicks outside dropdown menus and keyboard navigation
@@ -78,6 +103,12 @@ const Navbar = () => {
       if (settingsRef.current && !settingsRef.current.contains(event.target)) {
         setIsSettingsMenuOpen(false);
       }
+      if (preferencesRef.current && !preferencesRef.current.contains(event.target)) {
+        setIsPreferencesOpen(false);
+      }
+      if (getStartedRef.current && !getStartedRef.current.contains(event.target)) {
+        setIsGetStartedOpen(false);
+      }
     };
 
     // Handle keyboard navigation
@@ -87,11 +118,17 @@ const Navbar = () => {
         setIsSearchFocused(false);
         setIsSettingsMenuOpen(false);
         setIsProfileMenuOpen(false);
+        setIsGetStartedOpen(false);
+        setIsPreferencesOpen(false);
       }
 
       // Handle Tab key to manage focus trap in menus
-      if (event.key === "Tab" && (isSettingsMenuOpen || isProfileMenuOpen)) {
-        const menu = isSettingsMenuOpen ? settingsRef.current : document;
+      if (event.key === "Tab" && (isSettingsMenuOpen || isProfileMenuOpen || isPreferencesOpen)) {
+        const menu = isSettingsMenuOpen
+          ? settingsRef.current
+          : isPreferencesOpen
+            ? preferencesRef.current
+            : document;
         const focusableElements = menu.querySelectorAll(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
@@ -121,7 +158,12 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isSettingsMenuOpen, isProfileMenuOpen]);
+  }, [isSettingsMenuOpen, isProfileMenuOpen, isPreferencesOpen]);
+
+  const navigateToAuth = (role, mode) => {
+    setIsGetStartedOpen(false);
+    navigate(`/${mode}?role=${role}`);
+  };
 
   // Control body scrolling when settings modal is open
   useEffect(() => {
@@ -143,6 +185,21 @@ const Navbar = () => {
     // Save recent searches to localStorage whenever it changes
     localStorage.setItem("recentSearches", JSON.stringify(recentSearches));
   }, [recentSearches]);
+
+  useEffect(() => {
+    const syncPreferences = () => {
+      setPreferenceSnapshot(getPreferenceSnapshot());
+    };
+
+    syncPreferences();
+    window.addEventListener("tenantPreferencesUpdated", syncPreferences);
+    window.addEventListener("storage", syncPreferences);
+
+    return () => {
+      window.removeEventListener("tenantPreferencesUpdated", syncPreferences);
+      window.removeEventListener("storage", syncPreferences);
+    };
+  }, []);
 
   // Handler for search input changes
   const handleSearchChange = (e) => {
@@ -207,8 +264,8 @@ const Navbar = () => {
   };
 
   // Handler for user logout action
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsProfileMenuOpen(false);
     navigate("/");
   };
@@ -296,26 +353,6 @@ const Navbar = () => {
                     </div>
                   )}
 
-                  {/* Popular Destinations Section */}
-                  <div className="p-4 border-t border-neutral-100">
-                    <h3 className="text-sm font-semibold text-neutral-800">
-                      Popular Destinations
-                    </h3>
-                    <div className="space-y-2">
-                      {suggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          onClick={() => handleSuggestionClick(suggestion)}
-                          className="flex items-center p-2 hover:bg-neutral-50 rounded-md cursor-pointer"
-                        >
-                          <i className="fas fa-map-marker-alt text-neutral-400 mr-3"></i>
-                          <span className="text-sm text-neutral-700">
-                            {suggestion}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
@@ -323,13 +360,176 @@ const Navbar = () => {
 
           {/* Navigation - Responsive */}
           <div className="flex items-center gap-1 md:gap-2">
-            {/* Become a host link */}
-            <Link
-              to="/host/become-a-host"
-              className="text-neutral-700 hover:text-neutral-900 px-4 py-2 rounded-full text-sm font-medium hidden sm:block"
-            >
-              {getText("common", "becomeHost")}
-            </Link>
+            {!isAuthenticated && (
+              <div ref={getStartedRef} className="relative hidden sm:block">
+                <button
+                  type="button"
+                  onClick={() => setIsGetStartedOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 hover:shadow-md"
+                >
+                  <span>Get Started</span>
+                  <i className={`fas fa-chevron-${isGetStartedOpen ? "up" : "down"} text-[10px]`} />
+                </button>
+
+                {isGetStartedOpen && (
+                  <div className="absolute right-0 mt-3 w-80 overflow-hidden rounded-[24px] border border-neutral-200 bg-white p-3 shadow-card z-[1000]">
+                    <div className="mb-2 px-2 py-1">
+                      <p className="text-sm font-semibold text-neutral-900">Choose your role</p>
+                      <p className="text-xs text-neutral-500">Continue with the right sign up or login flow.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="rounded-2xl border border-rose-100 bg-rose-50/60 p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-100 text-rose-600">
+                            <i className="fas fa-house-user" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-neutral-900">Host</p>
+                            <p className="text-xs text-neutral-500">Publish rooms and manage listings</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => navigateToAuth("host", "register")} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-primary-700">Sign Up</button>
+                          <button onClick={() => navigateToAuth("host", "login")} className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-700 transition hover:border-primary-200 hover:text-primary-700">Login</button>
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-sky-100 bg-sky-50/60 p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-100 text-sky-600">
+                            <i className="fas fa-user" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-neutral-900">Tenant</p>
+                            <p className="text-xs text-neutral-500">Search rooms and contact hosts</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => navigateToAuth("tenant", "register")} className="flex-1 rounded-xl bg-primary-600 px-3 py-2 text-xs font-medium text-white transition hover:bg-primary-700">Sign Up</button>
+                          <button onClick={() => navigateToAuth("tenant", "login")} className="flex-1 rounded-xl border border-neutral-200 bg-white px-3 py-2 text-xs font-medium text-neutral-700 transition hover:border-primary-200 hover:text-primary-700">Login</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div ref={preferencesRef} className="relative hidden md:block">
+                <button
+                  type="button"
+                  onClick={() => setIsPreferencesOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
+                  aria-expanded={isPreferencesOpen}
+                  aria-haspopup="dialog"
+                >
+                  <i className="fas fa-sliders-h text-xs" />
+                  <span>Preferences</span>
+                </button>
+
+                {isPreferencesOpen && (
+                  <div className="absolute right-0 mt-3 w-[22rem] overflow-hidden rounded-[24px] border border-neutral-200 bg-white p-4 shadow-card z-[1000]">
+                    <div className="mb-3">
+                      <p className="text-sm font-semibold text-neutral-900">Roommate preferences</p>
+                      <p className="mt-1 text-xs text-neutral-500">
+                        {isAuthenticated
+                          ? "Hidden by default and pulled from your latest room-sharing draft or listing."
+                          : "View the roommate preference fields that will be shown inside the tenant room-sharing feature."}
+                      </p>
+                    </div>
+
+                    {isAuthenticated ? (
+                      <>
+                        <div className="space-y-3 text-sm text-neutral-700">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Gender preference</span>
+                            <span className="text-right font-medium">{preferenceSnapshot.gender}</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Occupation</span>
+                            <span className="text-right font-medium">
+                              {preferenceSnapshot.occupation?.length
+                                ? preferenceSnapshot.occupation.join(", ")
+                                : "Any"}
+                            </span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Smoking habits</span>
+                            <span className="text-right font-medium">{preferenceSnapshot.smoking}</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Drinking habits</span>
+                            <span className="text-right font-medium">{preferenceSnapshot.drinking}</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Cleanliness</span>
+                            <span className="text-right font-medium">{preferenceSnapshot.cleanliness}</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Sleep schedule</span>
+                            <span className="text-right font-medium">
+                              {preferenceSnapshot.sleepSchedule || "Not specified"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <Link
+                          to="/tenant/room-sharing"
+                          className="mt-4 inline-flex items-center text-sm font-semibold text-primary-600 transition hover:text-primary-700"
+                          onClick={() => setIsPreferencesOpen(false)}
+                        >
+                          Update room-sharing preferences
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <div className="space-y-3 rounded-2xl bg-sky-50/70 p-4 text-sm text-neutral-700">
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Gender preference</span>
+                            <span className="text-right font-medium">Male / Female / Any</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Occupation</span>
+                            <span className="text-right font-medium">Student / Working</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Smoking / Drinking</span>
+                            <span className="text-right font-medium">Lifestyle habits</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Cleanliness</span>
+                            <span className="text-right font-medium">Hygiene expectations</span>
+                          </div>
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="text-neutral-500">Other preferences</span>
+                            <span className="text-right font-medium">Sleep schedule and more</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+                          <div>
+                            <p className="text-sm font-semibold text-neutral-900">Tenant access</p>
+                            <p className="mt-1 text-xs text-neutral-500">
+                              Sign in as tenant to post vacancy and manage these preferences.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setIsPreferencesOpen(false);
+                              navigate("/login?role=tenant");
+                            }}
+                            className="rounded-xl bg-primary-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-primary-700"
+                          >
+                            Tenant Login
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
 
             {/* Language and Currency Selector */}
             <div ref={settingsRef} className="relative">
@@ -588,25 +788,7 @@ const Navbar = () => {
               >
                 <i className="fas fa-bars text-neutral-500"></i>
                 {isAuthenticated && currentUser ? (
-                  <div className="bg-primary-500 text-white rounded-full w-8 h-8 flex items-center justify-center overflow-hidden">
-                    {currentUser.profileImage ? (
-                      <img
-                        src={currentUser.profileImage}
-                        alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.onerror = null;
-                          e.target.style.display = "none";
-                          e.target.parentNode.innerHTML = `<span class="text-sm font-medium">${currentUser.firstName?.[0]}${currentUser.lastName?.[0]}</span>`;
-                        }}
-                      />
-                    ) : (
-                      <span className="text-sm font-medium">
-                        {currentUser.firstName?.[0]}
-                        {currentUser.lastName?.[0]}
-                      </span>
-                    )}
-                  </div>
+                  <UserAvatar user={currentUser} />
                 ) : (
                   <div className="bg-neutral-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
                     <i className="fas fa-user"></i>
@@ -658,24 +840,12 @@ const Navbar = () => {
                       {/* User profile summary */}
                       <div className="p-4">
                         <div className="flex items-center">
-                          <div className="bg-primary-500 text-white rounded-full w-10 h-10 mr-3 flex items-center justify-center overflow-hidden">
-                            {currentUser.profileImage ? (
-                              <img
-                                src={currentUser.profileImage}
-                                alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.onerror = null;
-                                  e.target.style.display = "none";
-                                  e.target.parentNode.innerHTML = `<span class="text-sm font-medium">${currentUser.firstName?.[0]}${currentUser.lastName?.[0]}</span>`;
-                                }}
-                              />
-                            ) : (
-                              <span className="text-sm font-medium">
-                                {currentUser.firstName?.[0]}
-                                {currentUser.lastName?.[0]}
-                              </span>
-                            )}
+                          <div className="mr-3">
+                            <UserAvatar
+                              user={currentUser}
+                              sizeClass="w-10 h-10"
+                              textClass="text-sm"
+                            />
                           </div>
                           <div>
                             <p className="font-semibold text-neutral-800">
@@ -719,6 +889,13 @@ const Navbar = () => {
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
                           Manage listings
+                        </Link>
+                        <Link
+                          to="/tenant/room-sharing"
+                          className="block px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          Post vacancy
                         </Link>
                         <Link
                           to="/account"
@@ -804,27 +981,6 @@ const Navbar = () => {
                 </div>
               )}
 
-              {/* Popular Destinations */}
-              <div className="mt-4">
-                <h3 className="text-sm font-semibold mb-2">
-                  Popular Destinations
-                </h3>
-                <div className="space-y-2">
-                  {suggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      onClick={() => {
-                        handleSuggestionClick(suggestion);
-                        setIsSearchFocused(false);
-                      }}
-                      className="flex items-center p-2 hover:bg-neutral-50 rounded-lg"
-                    >
-                      <i className="fas fa-map-marker-alt text-neutral-400 mr-3"></i>
-                      <span className="text-sm">{suggestion}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         )}

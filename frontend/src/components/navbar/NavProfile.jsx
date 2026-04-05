@@ -1,6 +1,32 @@
 import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 
+const UserAvatar = ({ user, sizeClass = "w-8 h-8", textClass = "text-sm" }) => {
+  const [imageError, setImageError] = React.useState(false);
+  const initials = `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.profileImage]);
+
+  return (
+    <div
+      className={`bg-primary-500 text-white rounded-full ${sizeClass} flex items-center justify-center overflow-hidden`}
+    >
+      {user?.profileImage && !imageError ? (
+        <img
+          src={user.profileImage}
+          alt={`${user.firstName} ${user.lastName}`}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <span className={`font-medium ${textClass}`}>{initials || "U"}</span>
+      )}
+    </div>
+  );
+};
+
 const NavProfile = ({
   isProfileMenuOpen,
   setIsProfileMenuOpen,
@@ -48,25 +74,7 @@ const NavProfile = ({
       >
         <i className="fas fa-bars text-neutral-500 group-hover:text-neutral-700 transition-colors"></i>
         {isAuthenticated && currentUser ? (
-          <div className="bg-primary-500 text-white rounded-full w-8 h-8 flex items-center justify-center overflow-hidden">
-            {currentUser.profileImage ? (
-              <img
-                src={currentUser.profileImage}
-                alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.onerror = null;
-                  e.target.style.display = "none";
-                  e.target.parentNode.innerHTML = `<span class="text-sm font-medium">${currentUser.firstName?.[0]}${currentUser.lastName?.[0]}</span>`;
-                }}
-              />
-            ) : (
-              <span className="text-sm font-medium">
-                {currentUser.firstName?.[0]}
-                {currentUser.lastName?.[0]}
-              </span>
-            )}
-          </div>
+          <UserAvatar user={currentUser} />
         ) : (
           <div className="bg-neutral-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
             <i className="fas fa-user"></i>
@@ -134,24 +142,12 @@ const NavProfile = ({
             {/* User profile summary */}
             <div className="p-4">
               <div className="flex items-center">
-                <div className="bg-primary-500 text-white rounded-full w-10 h-10 mr-3 flex items-center justify-center overflow-hidden">
-                  {currentUser.profileImage ? (
-                    <img
-                      src={currentUser.profileImage}
-                      alt={`${currentUser.firstName} ${currentUser.lastName}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.onerror = null;
-                        e.target.style.display = "none";
-                        e.target.parentNode.innerHTML = `<span class="text-sm font-medium">${currentUser.firstName?.[0]}${currentUser.lastName?.[0]}</span>`;
-                      }}
-                    />
-                  ) : (
-                    <span className="text-sm font-medium">
-                      {currentUser.firstName?.[0]}
-                      {currentUser.lastName?.[0]}
-                    </span>
-                  )}
+                <div className="mr-3">
+                  <UserAvatar
+                    user={currentUser}
+                    sizeClass="w-10 h-10"
+                    textClass="text-sm"
+                  />
                 </div>
                 <div>
                   <p className="font-semibold text-neutral-800">

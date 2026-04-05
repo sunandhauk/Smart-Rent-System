@@ -29,6 +29,7 @@ export function AuthProvider({ children }) {
             lastName: res.data.lastName,
             role: res.data.role,
             profileImage: res.data.profileImage,
+            phone: res.data.phone || "",
             referralCode: res.data.referralCode || "",
           });
           console.log("User session restored via refresh token");
@@ -66,6 +67,7 @@ export function AuthProvider({ children }) {
           lastName: res.data.lastName,
           role: res.data.role,
           profileImage: res.data.profileImage,
+          phone: res.data.phone || "",
           referralCode: res.data.referralCode || "",
         });
       }
@@ -100,6 +102,7 @@ export function AuthProvider({ children }) {
           lastName: res.data.lastName,
           role: res.data.role,
           profileImage: res.data.profileImage,
+          phone: res.data.phone || "",
           referralCode: res.data.referralCode || "",
         });
       }
@@ -108,6 +111,40 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.error("Login error:", err);
       const errorMessage = err.response?.data?.message || "Invalid credentials";
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const googleAuth = async (code, redirectUri) => {
+    try {
+      setError("");
+
+      const res = await api.post("/api/users/google", { code, redirectUri });
+
+      if (res.data && res.data.token) {
+        setAccessToken(res.data.token);
+        setCurrentUser({
+          _id: res.data._id,
+          username: res.data.username,
+          email: res.data.email,
+          firstName: res.data.firstName,
+          lastName: res.data.lastName,
+          role: res.data.role,
+          profileImage: res.data.profileImage,
+          phone: res.data.phone || "",
+          referralCode: res.data.referralCode || "",
+        });
+      } else {
+        setAccessToken(null);
+        setCurrentUser(null);
+      }
+
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.error("Google auth error:", err);
+      const errorMessage =
+        err.response?.data?.message || "Google sign-in failed";
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -278,6 +315,7 @@ export function AuthProvider({ children }) {
     updatePassword,
     resetPassword,
     socialLogin,
+    googleAuth,
     updateProfileImage,
     removeProfileImage,
     isAuthenticated: !!currentUser,

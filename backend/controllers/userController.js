@@ -1,3 +1,4 @@
+const axios = require("axios");
 const User = require("../models/user");
 const {
   registerSchema,
@@ -10,6 +11,41 @@ const {
 const { cloudinary } = require("../cloudConfig");
 const crypto = require("crypto");
 const { sendPasswordResetEmail } = require("../services/emailService");
+const { exchangeCodeForGoogleProfile } = require("../utils/googleAuth");
+
+const buildAuthResponse = (user, accessToken) => ({
+  _id: user._id,
+  username: user.username,
+  email: user.email,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  role: user.role,
+  profileImage: user.profileImage,
+  referralCode: user.referralCode,
+  token: accessToken,
+});
+
+const generateBaseUsername = (email, firstName, lastName) => {
+  const emailPrefix = email?.split("@")[0] || "user";
+  const fullName = [firstName, lastName].filter(Boolean).join("").toLowerCase();
+  const source = fullName || emailPrefix.toLowerCase();
+  const normalized = source.replace(/[^a-z0-9]/g, "");
+
+  return (normalized || "user").slice(0, 20);
+};
+
+const generateUniqueUsername = async (email, firstName, lastName) => {
+  const baseUsername = generateBaseUsername(email, firstName, lastName);
+  let candidate = baseUsername;
+  let counter = 1;
+
+  while (await User.exists({ username: candidate })) {
+    candidate = `${baseUsername}${counter}`.slice(0, 30);
+    counter += 1;
+  }
+
+  return candidate;
+};
 
 // Helper to set refresh token cookie
 const setRefreshTokenCookie = (res, refreshToken) => {
@@ -76,18 +112,7 @@ const registerUser = async (req, res) => {
     // Set refresh token cookie
     setRefreshTokenCookie(res, refreshToken);
 
-    // Send response
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      profileImage: user.profileImage,
-      referralCode: user.referralCode,
-      token: accessToken, // Frontend still expects 'token' key for access token
-    });
+    res.status(201).json(buildAuthResponse(user, accessToken));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
@@ -126,20 +151,123 @@ const loginUser = async (req, res) => {
     // Set refresh token cookie
     setRefreshTokenCookie(res, refreshToken);
 
-    // Send response
-    res.status(200).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-      profileImage: user.profileImage,
-      token: accessToken,
-    });
+    res.status(200).json(buildAuthResponse(user, accessToken));
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
+  }
+};
+
+const googleAuth = async (req, res) => {
+  try {
+    const { code, redirectUri } = req.body;
+
+    if (!code || !redirectUri) {
+      return res.status(400).json({
+        message: "Google authorization code and redirect URI are required",
+      });
+    }
+
+    const googleProfile = await exchangeCodeForGoogleProfile({
+      code,
+      redirectUri,
+    });
+
+    if (!googleProfile?.id || !googleProfile?.email) {
+      return res
+        .status(400)
+        .json({ message: "Google account data is incomplete" });
+    }
+
+    if (googleProfile.verified_email === false) {
+      return res.status(400).json({ message: "Google email is not verified" });
+    }
+
+    const firstName =
+      googleProfile.given_name ||
+      googleProfile.name?.split(" ").filter(Boolean)[0] ||
+      "Google";
+    const lastName =
+      googleProfile.family_name ||
+      googleProfile.name?.split(" ").slice(1).join(" ") ||
+      "User";
+
+    let user = await User.findOne({
+      $or: [
+        { googleId: googleProfile.id },
+        { email: googleProfile.email.toLowerCase() },
+      ],
+    });
+
+    if (!user) {
+      const username = await generateUniqueUsername(
+        googleProfile.email,
+        firstName,
+        lastName
+      );
+
+      user = await User.create({
+        username,
+        email: googleProfile.email.toLowerCase(),
+        password: crypto.randomBytes(32).toString("hex"),
+        firstName,
+        lastName,
+        authProvider: "google",
+        googleId: googleProfile.id,
+        profileImage: googleProfile.picture,
+      });
+    } else {
+      let needsSave = false;
+
+      if (!user.googleId) {
+        user.googleId = googleProfile.id;
+        needsSave = true;
+      }
+
+      if (user.authProvider !== "google") {
+        user.authProvider = "google";
+        needsSave = true;
+      }
+
+      if (!user.profileImage && googleProfile.picture) {
+        user.profileImage = googleProfile.picture;
+        needsSave = true;
+      }
+
+      if (!user.firstName && firstName) {
+        user.firstName = firstName;
+        needsSave = true;
+      }
+
+      if (!user.lastName && lastName) {
+        user.lastName = lastName;
+        needsSave = true;
+      }
+
+      if (needsSave) {
+        await user.save();
+      }
+    }
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    setRefreshTokenCookie(res, refreshToken);
+
+    res.status(200).json(buildAuthResponse(user, accessToken));
+  } catch (error) {
+    const isAxiosError = axios.isAxiosError(error);
+    const providerMessage =
+      error.response?.data?.error_description ||
+      error.response?.data?.error ||
+      error.response?.data?.message;
+    const message = providerMessage || error.message || "Google authentication failed";
+
+    console.error(
+      "Google auth error:",
+      error.response?.data || error.message || error
+    );
+    res.status(isAxiosError ? 400 : 500).json({ message });
   }
 };
 
@@ -177,6 +305,7 @@ const refreshAccessToken = async (req, res) => {
       lastName: user.lastName,
       role: user.role,
       profileImage: user.profileImage,
+      referralCode: user.referralCode,
       token: accessToken,
     });
   } catch (error) {
@@ -568,4 +697,5 @@ module.exports = {
   removeFromWishlist,
   forgotPassword,
   resetPassword,
+  googleAuth,
 };

@@ -20,7 +20,9 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: [true, "Password is required"],
+      required: function () {
+        return this.authProvider !== "google";
+      },
       minlength: [6, "Password must be at least 6 characters long"],
       select: false,
     },
@@ -44,6 +46,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "host", "admin"],
       default: "user",
+    },
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     bio: {
       type: String,
@@ -97,48 +109,45 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save middleware to hash password
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
+  if (!this.referralCode) {
+    this.referralCode = this._id.toString().slice(-6).toUpperCase();
+  }
+
+  if (!this.password || !this.isModified("password")) {
     return next();
   }
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 
-  // Generate referral code if not exists
-  if (!this.referralCode) {
-    this.referralCode = this._id.toString().slice(-6).toUpperCase();
-  }
-
   next();
 });
 
-// Method to check if password matches
 userSchema.methods.matchPassword = async function (enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  return bcrypt.compare(enteredPassword, this.password);
 };
 
-// Method to generate Access Token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-    expiresIn: "15m", // Short-lived access token
+    expiresIn: "15m",
   });
 };
 
-// Method to generate Refresh Token
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, {
-    expiresIn: "7d", // Long-lived refresh token
-  });
+  return jwt.sign(
+    { id: this._id },
+    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    }
+  );
 };
 
-
-// Method to generate password reset token
 userSchema.methods.createPasswordResetToken = function () {
   const resetToken = crypto.randomBytes(32).toString("hex");
   this.resetPasswordToken = resetToken;
-  this.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+  this.resetPasswordExpire = Date.now() + 3600000;
   return resetToken;
 };
 

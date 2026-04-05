@@ -1,612 +1,320 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Search, MapPin, Clock, X } from "lucide-react";
-import { translateText } from "../services/translationService";
-import useTranslatedText from "../hooks/useTranslatedText";
+import { ChevronLeft, ChevronRight, MapPin, Search } from "lucide-react";
+import { CHENNAI_AREAS } from "../utils/chennaiListings";
 
+const heroImages = [
+  {
+    url: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1950&q=80",
+    alt: "Comfortable room interior",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1950&q=80",
+    alt: "Modern hostel room",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1950&q=80",
+    alt: "Bright shared room",
+  },
+];
+
+const heroQuotes = [
+  {
+    lineOne: "Your perfect stay is just a click away",
+    lineTwo: "where comfort meets convenience.",
+  },
+  {
+    lineOne: "Your perfect stay is just a click away",
+    lineTwo: "where comfort meets convenience.",
+  },
+  {
+    lineOne: "Your perfect stay is just a click away",
+    lineTwo: "where comfort meets convenience.",
+  },
+];
+
+const featuredAreas = [
+  {
+    name: "Adyar",
+    image:
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
+    note: "Popular with students and working women",
+  },
+  {
+    name: "Velachery",
+    image:
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=1200&q=80",
+    note: "Good metro, office, and shopping access",
+  },
+  {
+    name: "Tambaram",
+    image:
+      "https://images.unsplash.com/photo-1460317442991-0ec209397118?auto=format&fit=crop&w=1200&q=80",
+    note: "Budget rooms with strong rail connectivity",
+  },
+  {
+    name: "OMR",
+    image:
+      "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+    note: "Best fit for IT corridor commuters",
+  },
+];
+
+const quickHighlights = [
+  {
+    title: "Curated listings",
+    description: "Rooms, PGs, and hostels are presented in a cleaner format so guests can compare options quickly.",
+  },
+  {
+    title: "Tenant-first messaging",
+    description: "Tenants can contact hosts directly, while hosts use the inbox only to receive and respond when allowed.",
+  },
+  {
+    title: "Local area search",
+    description: "Search by locality such as Adyar, Velachery, Tambaram, OMR, and nearby neighborhoods.",
+  },
+];
 
 const Home = () => {
-  // State for search query input value
-  const [searchQuery, setSearchQuery] = useState("");
-  // State to track if search dropdown is open/focused
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  // State for recent searches stored in localStorage
-  const [recentSearches, setRecentSearches] = useState(() => {
-    const saved = localStorage.getItem("recentSearches");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const inspirationText = useTranslatedText("Inspiration for your next trip");
-  const subtitleText = useTranslatedText("Explore top destinations with perfect vacation rentals");
-  const stayAnywhereText = useTranslatedText("Stay anywhere");
-  const uniqueAccommodationsText = useTranslatedText("Unique accommodations for every style and budget");
-  const apartmentsText = useTranslatedText("Apartments");
-  const urbanComfortText = useTranslatedText("Urban comfort");
-  const housesText = useTranslatedText("Houses");
-  const entireHomesText = useTranslatedText("Entire homes");
-  const cabinsText = useTranslatedText("Cabins");
-  const rusticRetreatsText = useTranslatedText("Rustic retreats");
-  const villasText = useTranslatedText("Villas");
-  const luxuryStaysText = useTranslatedText("Luxury stays");
-  const beachText = useTranslatedText("Beach");
-  const coastalLivingText = useTranslatedText("Coastal living");
-  const luxuryText = useTranslatedText("Luxury");
-  const premiumExperienceText = useTranslatedText("Premium experience");
-  const uniqueText = useTranslatedText("Unique");
-  const oneOfAKindText = useTranslatedText("One-of-a-kind stays");
-  const discoverText = useTranslatedText("Discover experiences");
-  const findActivitiesText = useTranslatedText("Find activities hosted by local experts");
-  const cityToursText = useTranslatedText("City Tours");
-  const exploreText = useTranslatedText("Explore with local guides");
-  const becomeAHostText = useTranslatedText("Become a host");
-  const shareText = useTranslatedText("Share your space, earn extra income, and connect with guests from around the world.");
-  const learnMoreText = useTranslatedText("Learn more");
-
-
-   // State for hero slideshow current image index
-  const [currentIndex, setCurrentIndex] = useState(0);
-  // State to prevent multiple transitions at once
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  
-  // Reference to search container for detecting outside clicks
-  const searchRef = useRef(null);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Popular location suggestions for search dropdown
-  const suggestions = [
-    "New York",
-    "Los Angeles",
-    "Miami",
-    "Chicago",
-    "San Francisco",
-  ];
-  
-
-
-   useEffect(() => {
-  const interval = setInterval(() => {
-    setIsTransitioning(true);
-    setCurrentIndex(prev => (prev + 1) % heroImages.length);
-
-    setTimeout(() => setIsTransitioning(false), 700);
-  }, 3300);
-
-  return () => clearInterval(interval);
-}, []);
-
-
-   // Function to go to next slide
-  const nextSlide = () => {
-    if (!isTransitioning) {
+  useEffect(() => {
+    const interval = setInterval(() => {
       setIsTransitioning(true);
       setCurrentIndex((prev) => (prev + 1) % heroImages.length);
-      setTimeout(() => setIsTransitioning(false), 700);
-    }
-  };
+      setTimeout(() => setIsTransitioning(false), 650);
+    }, 3600);
 
-  // Function to go to previous slide
-  const prevSlide = () => {
-    if (!isTransitioning) {
-      setIsTransitioning(true);
-      setCurrentIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
-      setTimeout(() => setIsTransitioning(false), 700);
-    }
-  };
-
-  // Function to jump to specific slide
-  const goToSlide = (index) => {
-    if (!isTransitioning && index !== currentIndex) {
-      setIsTransitioning(true);
-      setCurrentIndex(index);
-      setTimeout(() => setIsTransitioning(false), 700);
-    }
-  };
-  
-  
-  useEffect(() => {
-    // Handle clicks outside the search dropdown to close it
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setIsSearchFocused(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => clearInterval(interval);
   }, []);
 
-  // Function to handle search form submission
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Add to recent searches (avoid duplicates and limit to 5)
-      const updatedSearches = [
-        searchQuery.trim(),
-        ...recentSearches.filter((search) => search !== searchQuery.trim()),
-      ].slice(0, 5);
-
-      localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
-      navigate(`/listings?location=${encodeURIComponent(searchQuery.trim())}`);
-    } else {
-      navigate("/listings");
-    }
+  const nextSlide = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev + 1) % heroImages.length);
+    setTimeout(() => setIsTransitioning(false), 650);
   };
 
-  // Function to handle click on a search suggestion
-  const handleSuggestionClick = (suggestion) => {
-    // Add to recent searches
-    const updatedSearches = [
-      suggestion,
-      ...recentSearches.filter((search) => search !== suggestion),
-    ].slice(0, 5);
-
-    localStorage.setItem("recentSearches", JSON.stringify(updatedSearches));
-    navigate(`/listings?location=${encodeURIComponent(suggestion)}`);
+  const prevSlide = () => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    setCurrentIndex((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+    setTimeout(() => setIsTransitioning(false), 650);
   };
 
-  // Function to clear all recent searches from localStorage
-  const clearRecentSearches = () => {
-    localStorage.setItem("recentSearches", JSON.stringify([]));
-    setRecentSearches([]);
+  const handleSearchSubmit = (event) => {
+    event.preventDefault();
+    const nextLocation = searchQuery.trim();
+    navigate(
+      nextLocation
+        ? `/listings?location=${encodeURIComponent(nextLocation)}`
+        : "/listings"
+    );
   };
 
-  
-  // Sample featured destinations data
-  const destinations = [
-    {
-      id: 1,
-      name: "New York",
-      image:
-        "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-      properties: 120,
-    },
-    {
-      id: 2,
-      name: "Los Angeles",
-      image:
-        "https://images.unsplash.com/photo-1534190760961-74e8c1c5c3da?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-      properties: 94,
-    },
-    {
-      id: 3,
-      name: "Miami",
-      image:
-        "https://images.unsplash.com/photo-1535498730771-e735b998cd64?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-      properties: 85,
-    },
-    {
-      id: 4,
-      name: "Chicago",
-      image:
-        "https://images.unsplash.com/photo-1494522855154-9297ac14b55f?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-      properties: 73,
-    },
-  ];
-
-  // Sample popular experiences data
-  const experiences = [
-    {
-      id: 1,
-      title: "City Tours",
-      slug: "city-tours",
-      image:
-        "https://images.unsplash.com/photo-1473396413399-6717ef7c4093?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 2,
-      title: "Outdoor Adventures",
-      slug: "outdoor-adventures",
-      image:
-        "https://images.unsplash.com/photo-1533692328991-08159ff19fca?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 3,
-      title: "Local Cuisine",
-      slug: "local-cuisine",
-      image:
-        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-  ];
-
-   // Array of hero images for the slideshow
-  const heroImages = [
-    {
-      url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80",
-      alt: "Luxurious vacation home"
-    },
-    {
-      url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80",
-      alt: "Mountain landscape retreat"
-    },
-    {
-      url: "https://images.unsplash.com/photo-1540206395-68808572332f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80",
-      alt: "Tropical beach paradise"
-    },
-    {
-      url: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80",
-      alt: "Forest wilderness escape"
-    },
-    {
-      url: "https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80",
-      alt: "Coastal sunset view"
-    }
-  ];
-  
   return (
-    <div className="bg-white">
+    <div className="bg-[linear-gradient(180deg,_#fff7f8_0%,_#fffdf8_22%,_#ffffff_100%)]">
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(244,63,94,0.22),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.18),_transparent_28%)]" />
+        <div className="absolute left-[-6rem] top-20 h-56 w-56 rounded-full bg-rose-200/40 blur-3xl animate-pulse" />
+        <div className="absolute right-[-5rem] top-32 h-64 w-64 rounded-full bg-sky-200/40 blur-3xl animate-pulse" />
 
-      {/* Hero section with background image and search form */}
-       <div className="relative h-[600px] overflow-hidden group">
-        {/* Render all images with fade transition */}
-        {heroImages.map((image, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
-              index === currentIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <img
-              src={image.url}
-              alt={image.alt}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
-          </div>
-        ))}
-
-
-        
-
-        {/* Previous slide button - shows on hover */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        {/* Next slide button - shows on hover */}
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white p-3 rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 z-10"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-
-        {/* Dot indicators for slide navigation */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
-          {heroImages.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`transition-all duration-300 rounded-full ${
-                index === currentIndex
-                  ? 'w-8 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/50 hover:bg-white/75'
+        <div className="relative h-[640px] overflow-hidden">
+          {heroImages.map((image, index) => (
+            <div
+              key={image.alt}
+              className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+                index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Featured destinations section */}
-      <div className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-semibold mb-2 text-neutral-800">
-          {inspirationText}
-        </h2>
-        <p className="text-neutral-600 mb-8">
-          {subtitleText}
-        </p>
-
-       {/* Featured destinations grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {destinations.map((destination) => (
-            <Link
-            to={`/listings?location=${encodeURIComponent(destination.name)}`}
-            key={destination.id}
-            className="group"
- >
-              <div className="overflow-hidden rounded-2xl shadow-card hover:shadow-card-hover transition duration-300">
-               <div className="relative h-72">
-                <img src={destination.image}
-                alt={destination.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60"></div>
-                  <div className="absolute bottom-0 left-0 p-4 text-white">
-                    <h3 className="text-xl font-bold">{destination.name}</h3>
-                    <p className="text-sm">
-                      {destination.properties} properties
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-
-      </div>
-
-      {/* Property types section */}
-      <div className="py-16 bg-neutral-50 px-4 sm:px-6">
-        <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl font-semibold mb-2 text-neutral-800">
-            {stayAnywhereText}
-          </h2>
-          <p className="text-neutral-600 mb-8">
-            {uniqueAccommodationsText}
-          </p>
-
-          {/* Property types grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {/* Apartments property type */}
-            <Link to="/listings?type=apartment" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Apartments"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {apartmentsText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{urbanComfortText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span>2,500+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Houses property type */}
-            <Link to="/listings?type=house" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Houses"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {housesText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{entireHomesText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span>3,200+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Cabins property type */}
-            <Link to="/listings?type=cabin" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Cabins"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {cabinsText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{rusticRetreatsText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span>800+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Villas property type */}
-            <Link to="/listings?type=villa" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Villas"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {villasText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{luxuryStaysText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span>1,500+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Beach property type */}
-            <Link to="/listings?type=beach" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1505142468610-359e7d316be0?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Beach"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {beachText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{coastalLivingText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span>1,800+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-            {/* Luxury property type */}
-            <Link to="/listings?type=luxury" className="group">
-              <div className="relative rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-40 relative overflow-hidden">
-                  <img
-                    src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                    alt="Luxury"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute top-2 left-2 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs px-2 py-1 rounded-full font-medium">
-                    Premium
-                  </div>
-                  <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-100 scale-75">
-                    <svg className="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-base font-semibold text-neutral-800 group-hover:text-primary-600 transition duration-300">
-                    {luxuryText}
-                  </h3>
-                  <p className="text-neutral-600 text-xs mt-1">{premiumExperienceText}</p>
-                  <div className="mt-2 flex items-center text-xs text-neutral-500">
-                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                    <span>900+ stays</span>
-                  </div>
-                </div>
-              </div>
-            </Link>
-          </div>
-          
-          {/* View all property types button */}
-          <div className="mt-8 text-center">
-            <Link 
-              to="/listings" 
-              className="inline-flex items-center px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-all duration-300 transform hover:scale-105 shadow-sm hover:shadow-md"
             >
-              <span>View all property types</span>
-              <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-              </svg>
-            </Link>
+              <img src={image.url} alt={image.alt} className="h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-[linear-gradient(120deg,_rgba(15,23,42,0.78)_0%,_rgba(15,23,42,0.56)_42%,_rgba(15,23,42,0.34)_100%)]" />
+            </div>
+          ))}
+
+          <div className="absolute inset-0">
+            <div className="container mx-auto flex h-full items-center px-4">
+              <div className="max-w-3xl text-white">
+                <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-rose-100 backdrop-blur">
+                  Smart Rent System
+                </span>
+                <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-tight md:text-6xl">
+                  Discover stays that feel right from the very first click.
+                </h1>
+
+                <div className="mt-5 min-h-[84px] max-w-3xl rounded-[24px] border border-white/15 bg-white/10 px-5 py-4 backdrop-blur transition duration-500">
+                  <p className="bg-gradient-to-r from-rose-200 via-white to-sky-200 bg-[length:200%_100%] bg-clip-text text-lg font-semibold text-transparent animate-pulse md:text-2xl">
+                    {heroQuotes[currentIndex].lineOne}
+                  </p>
+                  <p className="mt-1 text-sm leading-6 text-slate-200 md:text-base">
+                    {heroQuotes[currentIndex].lineTwo}
+                  </p>
+                </div>
+
+                <form
+                  onSubmit={handleSearchSubmit}
+                  className="mt-8 flex max-w-2xl flex-col gap-3 rounded-[28px] border border-white/15 bg-white/12 p-3 backdrop-blur-md md:flex-row"
+                >
+                  <div className="flex flex-1 items-center gap-3 rounded-[20px] bg-white px-4 py-4 text-neutral-700">
+                    <MapPin className="h-5 w-5 text-primary-600" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      placeholder="Search by area or locality"
+                      className="w-full bg-transparent text-sm outline-none md:text-base"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center gap-2 rounded-[20px] bg-rose-500 px-6 py-4 text-sm font-semibold text-white transition hover:bg-rose-600 md:text-base"
+                  >
+                    <Search className="h-4 w-4" />
+                    Find Rooms
+                  </button>
+                </form>
+
+                <div className="mt-6 flex flex-wrap gap-3 text-sm text-slate-100">
+                  <span className="rounded-full bg-white/10 px-4 py-2 backdrop-blur">Tenant-first chat flow</span>
+                  <span className="rounded-full bg-white/10 px-4 py-2 backdrop-blur">Smooth property discovery</span>
+                  <span className="rounded-full bg-white/10 px-4 py-2 backdrop-blur">Manual locality support for hosts</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/12 p-3 text-white backdrop-blur transition hover:bg-white/20"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/12 p-3 text-white backdrop-blur transition hover:bg-white/20"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
+          <div className="absolute bottom-7 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`rounded-full transition-all duration-300 ${
+                  index === currentIndex ? "h-2 w-9 bg-white" : "h-2 w-2 bg-white/50"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Experiences section */}
-      <div className="py-16 px-4 sm:px-6 max-w-7xl mx-auto">
-        <h2 className="text-3xl font-semibold mb-2 text-neutral-800">
-          {discoverText}
-        </h2>
-        <p className="text-neutral-600 mb-8">
-          {findActivitiesText}
-        </p>
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <span className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-rose-600">
+              Popular localities
+            </span>
+            <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+              Start with the areas tenants search most
+            </h2>
+          </div>
+          <Link
+            to="/listings?location=Chennai"
+            className="inline-flex w-fit items-center rounded-full border border-neutral-200 bg-white px-5 py-3 text-sm font-medium text-neutral-700 transition hover:border-primary-200 hover:text-primary-700"
+          >
+            Browse all listings
+          </Link>
+        </div>
 
-        {/* Experiences grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {experiences.map((experience) => (
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {featuredAreas.map((area) => (
             <Link
-              key={experience.id}
-              to={`/listings?experience=${experience.slug}`}
-              className="group cursor-pointer"
+              key={area.name}
+              to={`/listings?location=${encodeURIComponent(area.name)}`}
+              className="group overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_24px_60px_-34px_rgba(15,23,42,0.28)] transition hover:-translate-y-1"
             >
-              <div className="rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition duration-300">
-                <div className="h-80 relative overflow-hidden">
-                  <img
-                    src={experience.image}
-                    alt={experience.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-xl font-medium text-neutral-800 group-hover:text-primary-500 transition duration-300">
-                    {experience.title}
-                  </h3>
-                  <p className="text-neutral-600">{exploreText}</p>
+              <div className="relative h-72 overflow-hidden">
+                <img
+                  src={area.image}
+                  alt={area.name}
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
+                <div className="absolute bottom-0 left-0 p-5 text-white">
+                  <h3 className="text-2xl font-semibold">{area.name}</h3>
+                  <p className="mt-2 text-sm text-slate-200">{area.note}</p>
                 </div>
               </div>
             </Link>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* Become a host CTA section */}
-      <div className="py-16 px-4 sm:px-6 bg-neutral-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-primary-500 rounded-3xl overflow-hidden">
-            <div className="md:flex">
-              <div className="md:w-1/2 p-10 md:p-16 flex flex-col justify-center">
-                <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                  {becomeAHostText}
-                </h2>
-                <p className="text-white text-lg mb-8 max-w-md">
-                  {shareText}
+      <section className="bg-neutral-50/80 py-16">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="mb-8 max-w-2xl">
+            <span className="inline-flex rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+              Platform focus
+            </span>
+            <h2 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+              Cleaner experience for local room discovery
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+            {quickHighlights.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-[28px] border border-white/70 bg-white p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.16)]"
+              >
+                <h3 className="text-xl font-semibold text-neutral-900">{item.title}</h3>
+                <p className="mt-3 text-sm leading-6 text-neutral-600">{item.description}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 rounded-[30px] border border-rose-100 bg-[linear-gradient(135deg,_#fff1f2_0%,_#ffffff_55%,_#eff6ff_100%)] p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.18)] md:p-8">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <h3 className="text-2xl font-bold text-neutral-900">Ready to publish your room?</h3>
+                <p className="mt-3 text-sm leading-6 text-neutral-600 md:text-base">
+                  Add your locality manually, upload room photos, set monthly rent, and make the listing visible right away.
                 </p>
-                {/* Learn more button for host sign-up */}
+                <div className="mt-4 flex flex-wrap gap-2 text-sm text-neutral-600">
+                  {CHENNAI_AREAS.slice(0, 6).map((area) => (
+                    <span key={area} className="rounded-full bg-white px-3 py-1.5 shadow-sm">
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Link
                   to="/host/become-a-host"
-                  className="inline-block bg-white text-primary-500 font-medium px-6 py-3 rounded-lg hover:bg-neutral-100 transition duration-300 w-fit"
+                  className="inline-flex items-center justify-center rounded-2xl bg-primary-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-primary-700"
                 >
-                  {learnMoreText}
+                  Become a Host
                 </Link>
-              </div>
-              <div className="md:w-1/2">
-                <img
-                  src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
-                  alt="Become a host"
-                  className="h-full w-full object-cover"
-                />
+                <Link
+                  to="/listings?location=Chennai"
+                  className="inline-flex items-center justify-center rounded-2xl border border-neutral-200 bg-white px-5 py-3 text-sm font-medium text-neutral-700 transition hover:border-primary-200 hover:text-primary-700"
+                >
+                  Explore Rooms
+                </Link>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

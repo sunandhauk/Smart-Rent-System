@@ -25,13 +25,24 @@ const LoadingSpinner = () => (
   </div>
 );
 
-const StaticMap = ({ address, city, state, country, zoom = 13, isConfirmedBooking = false }) => {
-  const [position, setPosition] = useState([40.7128, -74.006]); // New York as fallback
+const StaticMap = ({ address, city, state, country, coordinates, zoom = 13, isConfirmedBooking = false }) => {
+  const fallbackPosition =
+    Array.isArray(coordinates) && coordinates.length === 2
+      ? [Number(coordinates[1]), Number(coordinates[0])]
+      : [13.0827, 80.2707];
+
+  const [position, setPosition] = useState(fallbackPosition);
   const [loading, setLoading] = useState(false);
   const [locationName, setLocationName] = useState("");
 
   useEffect(() => {
     const locationQuery = [city, state, country].filter(Boolean).join(", ");
+
+    if (Array.isArray(coordinates) && coordinates.length === 2) {
+      setPosition([Number(coordinates[1]), Number(coordinates[0])]);
+      setLocationName([address, city, state, country].filter(Boolean).join(", "));
+    }
+
     if (!locationQuery) return;
 
     setLoading(true);
@@ -59,7 +70,7 @@ const StaticMap = ({ address, city, state, country, zoom = 13, isConfirmedBookin
       .finally(() => {
         setLoading(false);
       });
-  }, [address, city, state, country, isConfirmedBooking]);
+  }, [address, city, state, country, coordinates, isConfirmedBooking]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -101,4 +112,3 @@ const StaticMap = ({ address, city, state, country, zoom = 13, isConfirmedBookin
 };
 
 export default StaticMap;
-

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Home, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { startGoogleAuth } from "../utils/googleAuth";
 
 /**
  * Login Component
@@ -28,6 +29,8 @@ const Login = () => {
   const { login, isAuthenticated, error: authError, resetPassword } = useAuth();
   const navigate = useNavigate(); // For redirecting after login
   const location = useLocation(); // To get redirect path from location state
+  const role = new URLSearchParams(location.search).get("role") || "tenant";
+  const roleLabel = role === "host" ? "Host" : "Tenant";
 
   // Redirect if user is already logged in
   useEffect(() => {
@@ -121,31 +124,10 @@ const Login = () => {
     setSocialLoading("google");
     setError("");
 
-    // 1. Get the ID
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-
-    // 2. SAFETY CHECK: Stop if ID is missing or is the placeholder
-    if (!clientId || clientId === "your-google-client-id") {
-      setError("Google Login is not configured in this environment.");
-      setSocialLoading("");
-      return; 
-    }
-
     try {
-      const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-      const redirectUri = window.location.origin + "/auth/google/callback";
-
-      const params = new URLSearchParams({
-        client_id: clientId, // Use the variable, NOT the hardcoded fallback
-        redirect_uri: redirectUri,
-        response_type: "code",
-        scope: "email profile",
-        prompt: "select_account",
-      });
-
-      window.location.href = `${googleAuthUrl}?${params.toString()}`;
+      startGoogleAuth();
     } catch (err) {
-      setError("Google login failed. Please try again.");
+      setError(err.message || "Google login failed. Please try again.");
       setSocialLoading("");
     }
   };
@@ -210,9 +192,14 @@ const Login = () => {
               />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
-          Welcome Again             </h1>
+              {roleLabel} Login
+            </h1>
             <p className="text-gray-600 text-xs">
-              {showForgotPassword ? "Recover your account" : "Login to access your dashboard"}
+              {showForgotPassword
+                ? `Recover your ${roleLabel.toLowerCase()} account`
+                : role === "host"
+                  ? "Login to manage listings and receive tenant enquiries"
+                  : "Login to browse rooms and connect with hosts"}
             </p>
           </div>
 
@@ -419,8 +406,8 @@ const Login = () => {
               
               {/* Register link */}
               <p className="mt-3 text-center text-xs text-gray-600">
-                Don't have an account?{" "}
-                <Link to="/register" className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all">
+                Don't have a {roleLabel.toLowerCase()} account?{" "}
+                <Link to={`/register?role=${role}`} className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all">
                   Create a new account
                 </Link>
               </p>

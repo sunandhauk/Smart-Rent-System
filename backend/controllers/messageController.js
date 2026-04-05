@@ -9,6 +9,10 @@ const { messageSchema } = require('../schema');
 // @access  Private
 const createConversation = async (req, res) => {
   try {
+    if (req.user.role === 'host') {
+      return res.status(403).json({ message: 'Host accounts cannot start new conversations' });
+    }
+
     // Validate request data
     if (!req.body.receiverId) {
       return res.status(400).json({ message: 'Receiver ID is required' });
@@ -66,7 +70,7 @@ const createConversation = async (req, res) => {
     const populatedConversation = await Conversation.findById(conversation._id)
       .populate({
         path: 'participants',
-        select: 'username firstName lastName profileImage'
+        select: 'username firstName lastName profileImage phone'
       })
       .populate({
         path: 'property',
@@ -92,7 +96,7 @@ const getConversations = async (req, res) => {
     })
       .populate({
         path: 'participants',
-        select: 'username firstName lastName profileImage'
+        select: 'username firstName lastName profileImage phone'
       })
       .populate({
         path: 'property',
@@ -119,7 +123,7 @@ const getConversationById = async (req, res) => {
     const conversation = await Conversation.findById(req.params.id)
       .populate({
         path: 'participants',
-        select: 'username firstName lastName profileImage'
+        select: 'username firstName lastName profileImage phone'
       })
       .populate({
         path: 'property',
@@ -135,7 +139,7 @@ const getConversationById = async (req, res) => {
     }
     
     // Check if user is a participant in the conversation
-    if (!conversation.participants.some(p => p._id.toString() === req.user._id.toString())) {
+    if (!conversation.participants.some((p) => p._id.toString() === req.user._id.toString())) {
       return res.status(403).json({ message: 'Not authorized to view this conversation' });
     }
     
@@ -176,6 +180,10 @@ const getConversationById = async (req, res) => {
 // @access  Private
 const sendMessage = async (req, res) => {
   try {
+    if (req.user.role === 'host') {
+      return res.status(403).json({ message: 'Host accounts cannot send messages from this inbox' });
+    }
+
     // Validate request data
     const { error, value } = messageSchema.validate(req.body);
     if (error) {
@@ -191,12 +199,20 @@ const sendMessage = async (req, res) => {
     }
     
     // Check if user is a participant in the conversation
-    if (!conversation.participants.includes(req.user._id)) {
+    const isCurrentUserParticipant = conversation.participants.some(
+      (participantId) => participantId.toString() === req.user._id.toString()
+    );
+
+    if (!isCurrentUserParticipant) {
       return res.status(403).json({ message: 'Not authorized to send messages in this conversation' });
     }
     
     // Check if receiver is a participant in the conversation
-    if (!conversation.participants.includes(receiverId)) {
+    const isReceiverParticipant = conversation.participants.some(
+      (participantId) => participantId.toString() === receiverId.toString()
+    );
+
+    if (!isReceiverParticipant) {
       return res.status(403).json({ message: 'Receiver is not part of this conversation' });
     }
     
@@ -265,7 +281,11 @@ const getMessages = async (req, res) => {
     }
     
     // Check if user is a participant in the conversation
-    if (!conversation.participants.includes(req.user._id)) {
+    const isParticipant = conversation.participants.some(
+      (participantId) => participantId.toString() === req.user._id.toString()
+    );
+
+    if (!isParticipant) {
       return res.status(403).json({ message: 'Not authorized to view messages in this conversation' });
     }
     
@@ -327,7 +347,11 @@ const deleteConversation = async (req, res) => {
     }
     
     // Check if user is a participant in the conversation
-    if (!conversation.participants.includes(req.user._id) && req.user.role !== 'admin') {
+    const isParticipant = conversation.participants.some(
+      (participantId) => participantId.toString() === req.user._id.toString()
+    );
+
+    if (!isParticipant && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Not authorized to delete this conversation' });
     }
     

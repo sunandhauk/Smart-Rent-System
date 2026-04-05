@@ -133,7 +133,7 @@ const getProperties = async (req, res) => {
     console.log(`Filter criteria: ${JSON.stringify(filter)}`);
 
     const properties = await Property.find(filter)
-      .populate("owner", "username firstName lastName profileImage")
+      .populate("owner", "username firstName lastName profileImage phone bio location")
       .sort({ createdAt: -1 })
       .skip(startIndex)
       .limit(limit)
@@ -159,7 +159,7 @@ const getProperties = async (req, res) => {
 const getPropertyById = async (req, res) => {
   try {
     const property = await Property.findById(req.params.id)
-      .populate("owner", "username firstName lastName profileImage")
+      .populate("owner", "username firstName lastName profileImage phone bio location")
       .populate({
         path: "reviews",
         options: { sort: { createdAt: -1 } },

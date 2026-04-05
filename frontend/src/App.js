@@ -15,6 +15,7 @@ import TripManage from "./pages/TripManage";
 import Wishlist from "./pages/Wishlist";
 import HostListings from "./pages/HostListings";
 import Account from "./pages/Account";
+import TenantRoomSharing from "./pages/TenantRoomSharing";
 import Help from "./pages/Help";
 import BecomeHost from "./pages/BecomeHost";
 import About from "./pages/About";
@@ -31,7 +32,8 @@ import Cookies from "./pages/Cookies";
 import ResetPassword from "./pages/ResetPassword";
 import Map from "./pages/Map";
 import PropertyMap from "./pages/PropertyMap";
-import BlogPost from "./pages/BlogPost"
+import BlogPost from "./pages/BlogPost";
+import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 // Component to protect routes that require authentication
 import ProtectedRoute from "./components/ProtectedRoute";
 // Import ScrollToTop component
@@ -131,6 +133,10 @@ function App() {
               <Route path="/cookies" element={<Cookies />} />
               <Route path="/payment" element={<PaymentPage />} />
               <Route
+                path="/auth/google/callback"
+                element={<GoogleAuthCallback />}
+              />
+              <Route
                 path="/reset-password/:token"
                 element={<ResetPassword />}
               />
@@ -193,6 +199,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Account />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tenant/room-sharing"
+                element={
+                  <ProtectedRoute>
+                    <TenantRoomSharing />
                   </ProtectedRoute>
                 }
               />

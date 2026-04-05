@@ -1,7 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import PropertyImage from "../components/PropertyImage";
 import dummyProperties from "../data/dummyProperties";
+import {
+  CHENNAI_AREAS,
+  CHENNAI_CITY,
+  getStoredHostListings,
+  isChennaiProperty,
+} from "../utils/chennaiListings";
+import { useAuth } from "../contexts/AuthContext";
 
 const categories = [
   { id: "all", label: "All" },
@@ -10,14 +18,30 @@ const categories = [
   { id: "Room", label: "Room" },
 ];
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 18 },
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.38, delay: index * 0.06 },
+  }),
+};
+
+const getHostName = (property) => {
+  const owner = property.owner || property.host;
+  if (!owner) return "Verified host";
+  const fullName = [owner.firstName, owner.lastName].filter(Boolean).join(" ").trim();
+  return fullName || owner.username || owner.name || "Verified host";
+};
+
 const Listings = () => {
+  const { currentUser } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
-    location: "",
+    location: CHENNAI_CITY,
     priceMin: "",
     priceMax: "",
   });
@@ -25,12 +49,13 @@ const Listings = () => {
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    const locationParam = queryParams.get("location") || "";
-    const searchValue = locationParam.toLowerCase().trim();
+    const rawLocation = queryParams.get("location") || CHENNAI_CITY;
+    const searchValue = rawLocation.toLowerCase().trim();
 
-    const filtered = dummyProperties.filter((property) => {
-      if (!searchValue) return true;
+    const localHostListings = getStoredHostListings();
+    const mergedProperties = [...dummyProperties.filter(isChennaiProperty), ...localHostListings];
 
+    const filtered = mergedProperties.filter((property) => {
       const city = property.location?.city?.toLowerCase() || "";
       const locality = property.location?.locality?.toLowerCase() || "";
       const title = property.title?.toLowerCase() || "";
@@ -38,8 +63,15 @@ const Listings = () => {
       const category = property.category?.toLowerCase() || "";
       const propertyType = property.propertyType?.toLowerCase() || "";
 
+      if (city !== CHENNAI_CITY.toLowerCase()) {
+        return false;
+      }
+
+      if (!searchValue || searchValue === CHENNAI_CITY.toLowerCase()) {
+        return true;
+      }
+
       return (
-        city.includes(searchValue) ||
         locality.includes(searchValue) ||
         title.includes(searchValue) ||
         description.includes(searchValue) ||
@@ -51,7 +83,7 @@ const Listings = () => {
     setProperties(filtered);
     setFilters((prev) => ({
       ...prev,
-      location: locationParam,
+      location: rawLocation,
     }));
     setLoading(false);
   }, [location.search]);
@@ -60,32 +92,25 @@ const Listings = () => {
     return properties.filter((property) => {
       if (
         activeCategory !== "all" &&
-        (property.category || "").toLowerCase() !== activeCategory.toLowerCase()
+        (property.category || property.propertyType || "").toLowerCase() !== activeCategory.toLowerCase()
       ) {
         return false;
       }
 
-      if (
-        filters.location &&
-        ![
-          property.location?.city || "",
-          property.location?.locality || "",
-          property.title || "",
-        ]
-          .join(" ")
-          .toLowerCase()
-          .includes(filters.location.toLowerCase())
-      ) {
+      const searchableText = [
+        property.location?.city || "",
+        property.location?.locality || "",
+        property.title || "",
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      if (filters.location && !searchableText.includes(filters.location.toLowerCase())) {
         return false;
       }
 
-      if (filters.priceMin && property.price < Number(filters.priceMin)) {
-        return false;
-      }
-
-      if (filters.priceMax && property.price > Number(filters.priceMax)) {
-        return false;
-      }
+      if (filters.priceMin && Number(property.price) < Number(filters.priceMin)) return false;
+      if (filters.priceMax && Number(property.price) > Number(filters.priceMax)) return false;
 
       return true;
     });
@@ -101,40 +126,62 @@ const Listings = () => {
 
   const clearAllFilters = () => {
     setFilters({
-      location: "",
+      location: CHENNAI_CITY,
       priceMin: "",
       priceMax: "",
     });
     setActiveCategory("all");
-    navigate("/listings");
+    navigate("/listings?location=Chennai");
   };
 
   const navigateToPropertyDetail = (propertyId) => {
     navigate(`/properties/${propertyId}`);
   };
 
+  const navigateToChat = (event, property) => {
+    event.stopPropagation();
+
+    if (currentUser?.role === "host") {
+      return;
+    }
+
+    if (property.owner?._id) {
+      if (property.source === "local-host") {
+        navigate(`/messages?receiver=${property.owner._id}`);
+      } else {
+        navigate(`/messages?property=${property._id}&receiver=${property.owner._id}`);
+      }
+      return;
+    }
+
+    navigate(`/properties/${property._id}`);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg text-neutral-600">Loading properties...</p>
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 rounded-full border-4 border-primary-100 border-t-primary-600 animate-spin" />
+          <p className="text-lg text-neutral-600">Loading Chennai properties...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-neutral-50 min-h-screen">
-      <div className="bg-white border-b border-neutral-200 sticky top-[72px]" style={{ zIndex: 10 }}>
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(244,63,94,0.14),_transparent_28%),linear-gradient(180deg,_#fff7f8_0%,_#f8fafc_44%,_#ffffff_100%)]">
+      <div className="sticky top-[72px] z-10 border-b border-white/60 bg-white/75 backdrop-blur-xl">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-wrap gap-3 items-center justify-between">
-            <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
               {categories.map((category) => (
                 <button
                   key={category.id}
                   onClick={() => setActiveCategory(category.id)}
-                  className={`px-4 py-2 rounded-full border transition ${
+                  className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition duration-300 ${
                     activeCategory === category.id
-                      ? "bg-primary-600 text-white border-primary-600"
-                      : "bg-white text-neutral-700 border-neutral-300"
+                      ? "border-primary-600 bg-primary-600 text-white shadow-lg shadow-primary-200"
+                      : "border-neutral-200 bg-white text-neutral-700 hover:-translate-y-0.5 hover:border-primary-200 hover:text-primary-700"
                   }`}
                 >
                   {category.label}
@@ -144,144 +191,198 @@ const Listings = () => {
 
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 rounded-full border border-neutral-300 text-neutral-700"
+              className="rounded-full border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition hover:border-primary-200 hover:text-primary-700"
             >
-              Clear Filters
+              Reset Chennai Filters
             </button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-white rounded-2xl shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="container mx-auto px-4 py-8 md:py-10">
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          className="mb-8 overflow-hidden rounded-[28px] border border-white/70 bg-white/80 p-5 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.3)] backdrop-blur md:p-7"
+        >
+          <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <span className="inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-primary-700">
+                Chennai only
+              </span>
+              <h1 className="mt-3 text-3xl font-bold text-neutral-900 md:text-4xl">
+                Chennai rooms and hostels only
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-neutral-600 md:text-base">
+                Only rooms, PGs, and hostels located in Chennai are shown here. Newly published host listings also appear here automatically.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-2xl bg-rose-50 px-4 py-3 text-neutral-700">
+                <p className="font-semibold text-rose-600">{displayedProperties.length}</p>
+                <p>Chennai matches</p>
+              </div>
+              <div className="rounded-2xl bg-amber-50 px-4 py-3 text-neutral-700">
+                <p className="font-semibold text-amber-600">{CHENNAI_AREAS.length}</p>
+                <p>Focus localities</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <input
-              type="text"
               name="location"
               value={filters.location}
               onChange={handleFilterChange}
-              placeholder="Search Adyar, Vadapalani, Velachery..."
-              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Search Chennai area"
+              list="chennai-filter-areas"
+              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
             />
+            <datalist id="chennai-filter-areas">
+              <option value={CHENNAI_CITY} />
+              {CHENNAI_AREAS.map((area) => (
+                <option key={area} value={area} />
+              ))}
+            </datalist>
             <input
               type="number"
               name="priceMin"
               value={filters.priceMin}
               onChange={handleFilterChange}
-              placeholder="Min price"
-              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Min monthly price"
+              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
             />
             <input
               type="number"
               name="priceMax"
               value={filters.priceMax}
               onChange={handleFilterChange}
-              placeholder="Max price"
-              className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+              placeholder="Max monthly price"
+              className="w-full rounded-2xl border border-neutral-200 bg-white px-4 py-3 text-sm shadow-sm outline-none transition focus:border-primary-300 focus:ring-4 focus:ring-primary-100"
             />
           </div>
-        </div>
-
-        <h1 className="text-3xl font-bold text-neutral-900 mb-6">
-          {displayedProperties.length} {displayedProperties.length === 1 ? "Property" : "Properties"} Available
-        </h1>
+        </motion.section>
 
         {displayedProperties.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm py-16 text-center">
-            <div className="text-5xl text-neutral-300 mb-4">
-              <i className="fas fa-search"></i>
+          <div className="rounded-[28px] border border-white/70 bg-white/85 py-16 text-center shadow-[0_24px_60px_-34px_rgba(15,23,42,0.28)] backdrop-blur">
+            <div className="mb-4 text-5xl text-neutral-300">
+              <i className="fas fa-search" />
             </div>
-            <h3 className="text-2xl font-semibold text-neutral-800 mb-2">
-              No properties found
-            </h3>
-            <p className="text-neutral-500 mb-6">
-              Search panna Adyar, Vadapalani, Velachery, Tambaram madhiri Chennai areas try pannunga.
-            </p>
+            <h3 className="mb-2 text-2xl font-semibold text-neutral-800">No Chennai properties found</h3>
+            <p className="mb-6 text-neutral-500">Try areas such as Adyar, Velachery, Vadapalani, or Tambaram.</p>
             <button
               onClick={clearAllFilters}
-              className="bg-primary-600 text-white px-5 py-3 rounded-xl hover:bg-primary-700 transition"
+              className="rounded-xl bg-primary-600 px-5 py-3 text-white transition hover:bg-primary-700"
             >
               Clear all filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {displayedProperties.map((property) => {
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-3">
+            {displayedProperties.map((property, index) => {
               const propertyImages =
                 Array.isArray(property.images) && property.images.length > 0
                   ? property.images
                   : ["/images/default-property.jpg"];
 
               return (
-                <div
+                <motion.div
                   key={property._id}
-                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
+                  custom={index}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                  whileHover={{ y: -8 }}
+                  className="group cursor-pointer overflow-hidden rounded-[30px] border border-white/70 bg-white/90 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.33)] backdrop-blur"
                   onClick={() => navigateToPropertyDetail(property._id)}
                 >
-                  <div className="relative h-64">
+                  <div className="relative h-64 overflow-hidden md:h-72">
                     <PropertyImage
                       images={propertyImages}
                       alt={property.title}
-                      className="w-full h-64 object-cover"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       showGallery={true}
                       id={`property-image-${property._id}`}
                       propertyId={property._id}
                     />
-                    <span className="absolute top-4 right-4 bg-white text-primary-600 px-3 py-1 rounded-full font-semibold shadow-sm">
+                    <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/25 to-transparent" />
+                    <span className="absolute right-4 top-4 rounded-full bg-white px-4 py-2 text-base font-bold text-primary-600 shadow-lg">
                       Rs.{property.price}/month
                     </span>
+                    <div className="absolute bottom-4 left-4 flex items-center gap-2 rounded-full bg-black/50 px-3 py-1.5 text-xs text-white backdrop-blur">
+                      <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                      {property.location?.locality || CHENNAI_CITY}
+                    </div>
                   </div>
 
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-neutral-900">
-                        {property.title}
-                      </h3>
-                      <span className="text-sm font-medium text-yellow-500">
-                        <i className="fas fa-star mr-1"></i>
+                  <div className="p-5 md:p-6">
+                    <div className="mb-3 flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-xl font-semibold text-neutral-900 md:text-2xl">{property.title}</h3>
+                        <p className="mt-1 text-sm text-neutral-500">Hosted by {getHostName(property)}</p>
+                      </div>
+                      <span className="rounded-full bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-600">
+                        <i className="fas fa-star mr-1" />
                         {property.rating || property.averageRating || 4.5}
                       </span>
                     </div>
 
-                    <div className="mb-3">
-                      <span className="inline-block bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-md">
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      <span className="inline-flex rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-700">
                         {property.propertyType || property.category}
                       </span>
+                      <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-600">
+                        {property.source === "local-host" ? "New host listing" : "Verified listing"}
+                      </span>
                     </div>
 
-                    <p className="text-neutral-600 text-sm mb-4 line-clamp-2">
-                      {property.description}
-                    </p>
+                    <p className="mb-5 line-clamp-3 text-sm leading-6 text-neutral-600">{property.description}</p>
 
-                    <div className="flex items-center gap-4 text-sm text-neutral-500 mb-4">
-                      <span>
-                        <i className="fas fa-bed mr-1"></i>
+                    <div className="mb-5 grid grid-cols-2 gap-3 text-sm text-neutral-600">
+                      <div className="rounded-2xl bg-neutral-50 px-4 py-3">
+                        <i className="fas fa-bed mr-2 text-primary-500" />
                         {property.capacity?.bedrooms || 1} Beds
-                      </span>
-                      <span>
-                        <i className="fas fa-bath mr-1"></i>
+                      </div>
+                      <div className="rounded-2xl bg-neutral-50 px-4 py-3">
+                        <i className="fas fa-bath mr-2 text-primary-500" />
                         {property.capacity?.bathrooms || 1} Baths
-                      </span>
+                      </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-neutral-600">
-                        <i className="fas fa-map-marker-alt text-primary-500 mr-1"></i>
-                        {property.location?.locality || property.location?.city || "Unknown"}
-                        {property.location?.city ? `, ${property.location.city}` : ""}
+                    <div className="mb-5 flex items-center justify-between gap-4 text-sm text-neutral-600">
+                      <span className="min-w-0 truncate">
+                        <i className="fas fa-map-marker-alt mr-2 text-primary-500" />
+                        {property.location?.locality || property.location?.city || CHENNAI_CITY}, Chennai
                       </span>
+                      {(property.owner?.phone || property.host?.phone) && (
+                        <span className="shrink-0 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {property.owner?.phone || property.host?.phone}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
                       <button
                         onClick={(event) => {
                           event.stopPropagation();
                           navigateToPropertyDetail(property._id);
                         }}
-                        className="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 transition"
+                        className="flex-1 rounded-2xl bg-primary-600 px-4 py-3 font-medium text-white transition hover:bg-primary-700"
                       >
                         View Details
                       </button>
+                      <button
+                        onClick={(event) => navigateToChat(event, property)}
+                        disabled={currentUser?.role === "host"}
+                        className="flex-1 rounded-2xl border border-neutral-200 bg-white px-4 py-3 font-medium text-neutral-700 transition hover:-translate-y-0.5 hover:border-primary-200 hover:text-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <i className="fas fa-comments mr-2" />
+                        {currentUser?.role === "host" ? "Host Inbox Only" : "Chat Host"}
+                      </button>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
