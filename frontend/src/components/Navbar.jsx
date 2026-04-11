@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import { useAppSettings } from "../contexts/AppSettingsContext";
 import { useAuth } from "../contexts/AuthContext";
 import NavLogo from "./navbar/NavLogo";
@@ -31,6 +32,38 @@ const UserAvatar = ({ user, sizeClass = "w-8 h-8", textClass = "text-sm" }) => {
         <span className={`font-medium ${textClass}`}>{initials || "U"}</span>
       )}
     </div>
+  );
+};
+
+const ThemeToggle = ({ theme, onToggle, compact = false }) => {
+  const isDark = theme === "dark";
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`relative inline-flex items-center rounded-full border border-violet-200 bg-[linear-gradient(135deg,rgba(237,233,254,0.95),rgba(243,232,255,0.92),rgba(255,255,255,0.98))] p-1 shadow-[0_16px_40px_-24px_rgba(124,58,237,0.65)] transition hover:shadow-[0_20px_44px_-24px_rgba(124,58,237,0.75)] dark:border-violet-400/30 dark:bg-[linear-gradient(135deg,rgba(46,16,101,0.96),rgba(88,28,135,0.92),rgba(30,41,59,0.96))] ${
+        compact ? "w-[76px]" : "w-[84px]"
+      }`}
+      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+      title={`Switch to ${isDark ? "light" : "dark"} mode`}
+    >
+      <div className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.85),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(196,181,253,0.42),transparent_40%)] dark:bg-[radial-gradient(circle_at_top_left,rgba(221,214,254,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(217,70,239,0.18),transparent_36%)]" />
+      <div className={`relative flex w-full items-center ${isDark ? "justify-start" : "justify-end"}`}>
+        <motion.div
+          layout
+          transition={{
+            type: "spring",
+            visualDuration: 0.2,
+            bounce: 0.2,
+          }}
+          className={`relative flex ${compact ? "h-10 w-10" : "h-11 w-11"} items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#faf5ff_0%,#d8b4fe_24%,#a855f7_58%,#6d28d9_100%)] text-white shadow-[0_12px_28px_-12px_rgba(109,40,217,0.95)]`}
+        >
+          <span className="absolute inset-[4px] rounded-full border border-white/25" />
+          <i className={`fas ${isDark ? "fa-sun" : "fa-moon"} relative z-10 text-sm`} />
+        </motion.div>
+      </div>
+    </button>
   );
 };
 
@@ -66,8 +99,10 @@ const Navbar = () => {
     language,
     languageName,
     currency,
+    theme,
     changeLanguage,
     changeCurrency,
+    toggleTheme,
     supportedLanguages,
     getText,
     isTranslating,
@@ -417,16 +452,18 @@ const Navbar = () => {
             )}
 
             <div ref={preferencesRef} className="relative hidden md:block">
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setIsPreferencesOpen((prev) => !prev)}
                   className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2.5 text-sm font-medium text-neutral-700 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-700"
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.94 }}
                   aria-expanded={isPreferencesOpen}
                   aria-haspopup="dialog"
                 >
                   <i className="fas fa-sliders-h text-xs" />
                   <span>Preferences</span>
-                </button>
+                </motion.button>
 
                 {isPreferencesOpen && (
                   <div className="absolute right-0 mt-3 w-[22rem] overflow-hidden rounded-[24px] border border-neutral-200 bg-white p-4 shadow-card z-[1000]">
@@ -530,6 +567,10 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
+
+            <div className="hidden md:flex">
+              <ThemeToggle theme={theme} onToggle={toggleTheme} compact />
+            </div>
 
             {/* Language and Currency Selector */}
             <div ref={settingsRef} className="relative">
@@ -635,6 +676,16 @@ const Navbar = () => {
 
                     {/* Language Selection Section */}
                     <div className="p-6 border-b border-neutral-200">
+                      <div className="mb-6 flex items-center justify-between gap-4 rounded-2xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+                        <div>
+                          <p className="text-sm font-semibold text-neutral-900">Appearance</p>
+                          <p className="mt-1 text-xs text-neutral-500">
+                            Switch between light and dark mode anytime.
+                          </p>
+                        </div>
+                        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                      </div>
+
                       <h3 className="text-lg font-semibold text-neutral-800 mb-4">
                         Select a language
                       </h3>

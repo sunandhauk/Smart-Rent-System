@@ -42,6 +42,24 @@ const defaultTexts = {
   // Add more sections as needed
 };
 
+const getInitialTheme = () => {
+  const savedTheme = localStorage.getItem("theme");
+
+  if (savedTheme === "light" || savedTheme === "dark") {
+    return savedTheme;
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    return "dark";
+  }
+
+  return "light";
+};
+
 export const AppSettingsProvider = ({ children }) => {
   // Get initial settings from localStorage or use defaults
   const [language, setLanguage] = useState(() => {
@@ -55,6 +73,7 @@ export const AppSettingsProvider = ({ children }) => {
   const [currency, setCurrency] = useState(() => {
     return "INR";
   });
+  const [theme, setTheme] = useState(getInitialTheme);
 
   const [translations, setTranslations] = useState(defaultTexts);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -67,6 +86,12 @@ export const AppSettingsProvider = ({ children }) => {
     localStorage.setItem("languageName", languageName);
     localStorage.setItem("currency", currency);
   }, [language, languageName, currency]);
+
+  useEffect(() => {
+    localStorage.setItem("theme", theme);
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  }, [theme]);
 
   // Fetch exchange rates when currency changes
   useEffect(() => {
@@ -129,6 +154,14 @@ export const AppSettingsProvider = ({ children }) => {
     setCurrency(newCurrency);
   };
 
+  const changeTheme = (nextTheme) => {
+    setTheme(nextTheme);
+  };
+
+  const toggleTheme = () => {
+    setTheme((currentTheme) => (currentTheme === "light" ? "dark" : "light"));
+  };
+
   // Format price according to current currency
   const formatPrice = (amount) => {
     if (!amount || isNaN(amount)) return "0";
@@ -181,8 +214,11 @@ export const AppSettingsProvider = ({ children }) => {
     language,
     languageName,
     currency,
+    theme,
     changeLanguage,
     changeCurrency,
+    changeTheme,
+    toggleTheme,
     formatPrice,
     getText,
     isTranslating,
