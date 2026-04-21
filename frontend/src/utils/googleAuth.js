@@ -17,13 +17,27 @@ export const getGoogleRedirectUri = () => {
   const configuredRedirectUri = process.env.REACT_APP_GOOGLE_REDIRECT_URI;
 
   if (typeof window === "undefined") {
+    if (process.env.NODE_ENV === "production") {
+      return `https://nest-dosthu.netlify.app${GOOGLE_CALLBACK_PATH}`;
+    }
+
     return configuredRedirectUri || `http://localhost:3000${GOOGLE_CALLBACK_PATH}`;
   }
 
   // Prefer the explicitly configured redirect URI when present so the frontend,
   // backend, and Google Console all use the exact same callback URL.
-  if (configuredRedirectUri) {
+  if (
+    configuredRedirectUri &&
+    !(
+      process.env.NODE_ENV === "production" &&
+      configuredRedirectUri.includes("localhost")
+    )
+  ) {
     return configuredRedirectUri;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    return `https://nest-dosthu.netlify.app${GOOGLE_CALLBACK_PATH}`;
   }
 
   return `${window.location.origin}${GOOGLE_CALLBACK_PATH}`;
