@@ -26,7 +26,7 @@ const Privacy = () => {
               <p className="text-sm text-neutral-500 mb-8">Last Updated: {lastUpdated}</p>
               
               <p className="lead text-lg text-neutral-700 mb-8">
-                Smart Rent System is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services.
+                Nest Dosthu System is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">Information We Collect</h2>
@@ -138,7 +138,7 @@ const Privacy = () => {
                 If you have questions or concerns about this Privacy Policy or our privacy practices, please contact us at:
               </p>
               <div className="bg-neutral-50 p-6 rounded-lg">
-                <p className="mb-2"><strong>Email:</strong> privacy@smartrentsystem.com</p>
+                <p className="mb-2"><strong>Email:</strong> privacy@Nest Dosthu.com</p>
                 <p className="mb-2"><strong>Postal Address:</strong> 123 Rent Street, City, Country</p>
                 <p><strong>Phone:</strong> +1 (123) 456-7890</p>
               </div>
@@ -153,7 +153,7 @@ const Privacy = () => {
             >
               <h3 className="font-medium text-lg text-neutral-900 mb-2">Terms of Service</h3>
               <p className="text-neutral-600 mb-2">
-                Review our terms and conditions for using the Smart Rent platform.
+                Review our terms and conditions for using the Nest Dosthu platform.
               </p>
               <span className="text-primary-600 font-medium flex items-center">
                 Read Terms

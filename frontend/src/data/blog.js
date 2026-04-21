@@ -149,7 +149,7 @@ Investing in professional photography—or learning to do it well yourself—has
     },
     {
         id: 4,
-        title: 'Smart Rent System Launches New Mobile App Features',
+        title: 'Nest Dosthu System Launches New Mobile App Features',
         excerpt: 'Our latest app update brings exciting new features designed to make your booking experience even better.',
         image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80',
         category: 'news',
@@ -293,7 +293,7 @@ Don't just fill space. Every item should have a purpose or spark joy.
     },
     {
         id: 8,
-        title: 'Smart Rent Partners with Local Tourism Boards',
+        title: 'Nest Dosthu Partners with Local Tourism Boards',
         excerpt: 'Our new partnerships aim to promote sustainable tourism and support local communities around the world.',
         image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1600&q=80',
         category: 'news',
@@ -324,3 +324,4 @@ Together, we can travel better.
     `
     }
 ];
+

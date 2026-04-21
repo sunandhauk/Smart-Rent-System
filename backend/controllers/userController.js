@@ -300,6 +300,14 @@ const completeGoogleLogin = async ({ code, redirectUri, role, res }) => {
     redirectUri,
   });
 
+  return completeGoogleProfileLogin({
+    googleProfile,
+    role,
+    res,
+  });
+};
+
+const completeGoogleProfileLogin = async ({ googleProfile, role, res }) => {
   const user = await findOrCreateGoogleUser(googleProfile, role);
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
@@ -845,5 +853,7 @@ module.exports = {
   resetPassword,
   googleAuth,
   googleAuthCallback,
+  completeGoogleProfileLogin,
+  getGoogleAuthErrorMessage,
   startGoogleAuth,
 };

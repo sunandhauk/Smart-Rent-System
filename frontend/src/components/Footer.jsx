@@ -10,7 +10,7 @@ const Footer = () => {
   const [subscribeStatus, setSubscribeStatus] = useState(null);
 
   const descriptionText = useTranslatedText(
-    "Find your perfect home away from home. SmartRent provides a secure platform for property rental with verified hosts and quality listings."
+    "Find your perfect home away from home. Nest Dosthu provides a secure platform for property rental with verified hosts and quality listings."
   );
   const quickLinksText = useTranslatedText("Quick Links");
   const homeText = useTranslatedText("Home");
@@ -163,8 +163,8 @@ const Footer = () => {
               </li>
               <li className="group flex items-center justify-center sm:justify-start">
                 <i className="fas fa-envelope mr-3 text-primary-500" />
-                <a href="mailto:info@smartrentsystem.com" className={`${linkClass} transition duration-300 group-hover:translate-x-1`}>
-                  info@smartrentsystem.com
+                <a href="mailto:info@Nest Dosthu.com" className={`${linkClass} transition duration-300 group-hover:translate-x-1`}>
+                  info@Nest Dosthu.com
                 </a>
               </li>
             </ul>
@@ -222,7 +222,7 @@ const Footer = () => {
         <div className={`mt-8 flex flex-col items-center justify-between border-t pt-8 text-center sm:flex-row sm:text-left ${dividerClass}`}>
           <p className={`mb-4 text-sm sm:mb-0 ${bodyClass}`}>
             &copy; {currentYear}{" "}
-            <span className={`font-medium ${headingClass}`}>SmartRentSystem</span>. All rights reserved.
+            <span className={`font-medium ${headingClass}`}>Nest Dosthu</span>. All rights reserved.
           </p>
           <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6">
             <Link
@@ -256,3 +256,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

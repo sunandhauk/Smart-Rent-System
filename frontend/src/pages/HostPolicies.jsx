@@ -93,7 +93,7 @@ const HostPolicies = () => {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Host Policies & Guidelines</h1>
             <p className="text-xl text-primary-100">
-              Everything you need to know about hosting on Smart Rent System
+              Everything you need to know about hosting on Nest Dosthu System
             </p>
             <p className="text-sm text-primary-200 mt-4">Last Updated: {lastUpdated}</p>
           </div>
@@ -173,7 +173,7 @@ const HostPolicies = () => {
                   <div className="bg-primary-50 border-l-4 border-primary-500 p-6 mb-8 rounded-r-lg">
                     <p className="text-primary-900 font-medium mb-2">🌟 Welcome, Host!</p>
                     <p className="text-primary-800">
-                      These policies are designed to ensure a safe, respectful, and high-quality experience for both hosts and guests. By listing your property on Smart Rent System, you agree to follow these guidelines.
+                      These policies are designed to ensure a safe, respectful, and high-quality experience for both hosts and guests. By listing your property on Nest Dosthu System, you agree to follow these guidelines.
                     </p>
                   </div>
 
@@ -208,7 +208,7 @@ const HostPolicies = () => {
 
                   <h3 className="text-xl font-semibold text-neutral-700 mt-6 mb-3">Service Fees</h3>
                   <p className="mb-6">
-                    Smart Rent System charges a service fee of 3% on each booking. This fee is automatically deducted from your payout and covers payment processing, customer support, and platform maintenance.
+                    Nest Dosthu System charges a service fee of 3% on each booking. This fee is automatically deducted from your payout and covers payment processing, customer support, and platform maintenance.
                   </p>
 
                   <h2 id="communication" className="text-2xl font-bold text-neutral-800 mt-10 mb-4 scroll-mt-24">3. Communication & Responsiveness</h2>
@@ -311,7 +311,7 @@ const HostPolicies = () => {
 
                   <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
                     <p className="text-red-800">
-                      <strong>⚠️ Critical:</strong> You are solely responsible for ensuring compliance with all applicable laws. Smart Rent System does not provide legal or tax advice.
+                      <strong>⚠️ Critical:</strong> You are solely responsible for ensuring compliance with all applicable laws. Nest Dosthu System does not provide legal or tax advice.
                     </p>
                   </div>
 
@@ -382,8 +382,8 @@ const HostPolicies = () => {
                   <div className="bg-neutral-50 p-6 rounded-lg mb-8">
                     <p className="mb-4">For questions about Host Policies, please contact us:</p>
                     <div className="space-y-2">
-                      <p><strong>Host Support:</strong> <a href="mailto:hosts@smartrentsystem.com" className="text-primary-600 hover:text-primary-700">hosts@smartrentsystem.com</a></p>
-                      <p><strong>Legal Inquiries:</strong> <a href="mailto:legal@smartrentsystem.com" className="text-primary-600 hover:text-primary-700">legal@smartrentsystem.com</a></p>
+                      <p><strong>Host Support:</strong> <a href="mailto:hosts@Nest Dosthu.com" className="text-primary-600 hover:text-primary-700">hosts@Nest Dosthu.com</a></p>
+                      <p><strong>Legal Inquiries:</strong> <a href="mailto:legal@Nest Dosthu.com" className="text-primary-600 hover:text-primary-700">legal@Nest Dosthu.com</a></p>
                       <p><strong>Phone Support:</strong> +1 (123) 456-7890 (24/7)</p>
                       <p><strong>Help Center:</strong> <Link to="/help" className="text-primary-600 hover:text-primary-700">Visit Help Center</Link></p>
                     </div>
@@ -458,3 +458,4 @@ const HostPolicies = () => {
 };
 
 export default HostPolicies;
+

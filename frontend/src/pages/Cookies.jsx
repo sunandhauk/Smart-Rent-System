@@ -26,7 +26,7 @@ const Cookies = () => {
               <p className="text-sm text-neutral-500 mb-8">Last Updated: {lastUpdated}</p>
               
               <p className="lead text-lg text-neutral-700 mb-8">
-                This Cookie Policy explains how Smart Rent System uses cookies and similar technologies when you visit our website or use our services. By using our platform, you consent to the use of cookies as described in this policy.
+                This Cookie Policy explains how Nest Dosthu System uses cookies and similar technologies when you visit our website or use our services. By using our platform, you consent to the use of cookies as described in this policy.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">What Are Cookies?</h2>
@@ -81,13 +81,13 @@ const Cookies = () => {
                   <tbody className="bg-white divide-y divide-neutral-200">
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">_auth_token</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">smartrentsystem.com</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Nest Dosthu.com</td>
                       <td className="px-6 py-4 text-sm text-neutral-700">Used for authentication and security</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">1 year</td>
                     </tr>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">_session_id</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">smartrentsystem.com</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Nest Dosthu.com</td>
                       <td className="px-6 py-4 text-sm text-neutral-700">Maintains user session state</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Session</td>
                     </tr>
@@ -105,19 +105,19 @@ const Cookies = () => {
                     </tr>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">pref_currency</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">smartrentsystem.com</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Nest Dosthu.com</td>
                       <td className="px-6 py-4 text-sm text-neutral-700">Remembers currency preference</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">1 year</td>
                     </tr>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">pref_language</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">smartrentsystem.com</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Nest Dosthu.com</td>
                       <td className="px-6 py-4 text-sm text-neutral-700">Remembers language preference</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">1 year</td>
                     </tr>
                     <tr>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">recently_viewed</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">smartrentsystem.com</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">Nest Dosthu.com</td>
                       <td className="px-6 py-4 text-sm text-neutral-700">Tracks recently viewed listings</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-700">30 days</td>
                     </tr>
@@ -173,7 +173,7 @@ const Cookies = () => {
                 If you have any questions about our use of cookies or this Cookie Policy, please contact us at:
               </p>
               <div className="bg-neutral-50 p-6 rounded-lg">
-                <p className="mb-2"><strong>Email:</strong> privacy@smartrentsystem.com</p>
+                <p className="mb-2"><strong>Email:</strong> privacy@Nest Dosthu.com</p>
                 <p className="mb-2"><strong>Postal Address:</strong> 123 Rent Street, City, Country</p>
                 <p><strong>Phone:</strong> +1 (123) 456-7890</p>
               </div>
@@ -204,7 +204,7 @@ const Cookies = () => {
             >
               <h3 className="font-medium text-lg text-neutral-900 mb-2">Terms of Service</h3>
               <p className="text-neutral-600 mb-2">
-                Review our terms and conditions for using Smart Rent.
+                Review our terms and conditions for using Nest Dosthu.
               </p>
               <span className="text-primary-600 font-medium flex items-center">
                 Read Terms

@@ -53,7 +53,7 @@ const Blog = () => {
     },
     {
       id: 4,
-      title: 'Smart Rent System Launches New Mobile App Features',
+      title: 'Nest Dosthu System Launches New Mobile App Features',
       excerpt: 'Our latest app update brings exciting new features designed to make your booking experience even better.',
       image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
       category: 'news',
@@ -101,7 +101,7 @@ const Blog = () => {
     },
     {
       id: 8,
-      title: 'Smart Rent Partners with Local Tourism Boards',
+      title: 'Nest Dosthu Partners with Local Tourism Boards',
       excerpt: 'Our new partnerships aim to promote sustainable tourism and support local communities around the world.',
       image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60',
       category: 'news',
@@ -127,7 +127,7 @@ const Blog = () => {
       <div className="bg-primary-700 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Smart Rent Blog</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Nest Dosthu Blog</h1>
             <p className="text-xl text-primary-100">
               Travel tips, destination guides, and insights to help you make the most of your trips
             </p>
@@ -266,7 +266,7 @@ const Blog = () => {
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-2xl font-bold text-neutral-800 mb-4">Subscribe to Our Newsletter</h2>
             <p className="text-neutral-600 mb-6">
-              Get the latest travel tips, destination guides, and Smart Rent news delivered straight to your inbox.
+              Get the latest travel tips, destination guides, and Nest Dosthu news delivered straight to your inbox.
             </p>
             <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input 

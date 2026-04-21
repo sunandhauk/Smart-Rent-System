@@ -119,14 +119,16 @@ const Register = () => {
       <div className="relative z-10 w-full flex items-start justify-center min-h-screen pt-8">
         <div className="w-full max-w-md animate-fade-in bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-5">
           <div className="mb-3 text-center">
-            <div className="mb-3 inline-block rounded-[24px] border border-amber-300/35 bg-[#12070a] p-2 shadow-lg transition-transform duration-300 hover:scale-105">
+            <div className="mb-3 flex items-center justify-center gap-3">
+              <div className="rounded-[24px] border border-amber-300/35 bg-[#12070a] p-2 shadow-lg transition-transform duration-300 hover:scale-105">
               <img
                 src={nestDosthuLogo}
                 alt="Nest Dosthu logo"
                 className="h-12 w-12 rounded-2xl object-cover"
               />
+              </div>
+              <h1 className={headingBadgeClass}>{roleLabel} Sign Up</h1>
             </div>
-            <h1 className={headingBadgeClass}>{roleLabel} Sign Up</h1>
             <p className="text-gray-600 text-xs">
               {role === "host" ? "Create your host account and start publishing rooms." : "Create your tenant account and start exploring rooms."}
             </p>

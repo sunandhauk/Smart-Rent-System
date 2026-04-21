@@ -20,7 +20,7 @@ const About = () => {
       name: "Jane Smith",
       role: "CEO & Founder",
       image: "https://randomuser.me/api/portraits/women/32.jpg",
-      bio: "Jane founded Smart Rent System with a vision to transform the way people find and book accommodations around the world.",
+      bio: "Jane founded Nest Dosthu System with a vision to transform the way people find and book accommodations around the world.",
     },
     {
       name: "Michael Johnson",
@@ -38,7 +38,7 @@ const About = () => {
       name: "James Wilson",
       role: "Customer Experience Lead",
       image: "https://randomuser.me/api/portraits/men/32.jpg",
-      bio: "James is dedicated to ensuring every user receives exceptional support and has a positive experience with Smart Rent System.",
+      bio: "James is dedicated to ensuring every user receives exceptional support and has a positive experience with Nest Dosthu System.",
     },
   ];
 
@@ -55,7 +55,7 @@ const About = () => {
               id="hero-title"
               className="text-4xl md:text-5xl font-bold mb-6 animate-fadeIn"
             >
-              About Smart Rent System
+              About Nest Dosthu System
             </h1>
             <p className="text-xl text-primary-100 mb-8 animate-fadeIn animation-delay-200">
               Making property rentals simple, secure, and enjoyable for
@@ -77,7 +77,7 @@ const About = () => {
             </h2>
             <div className="bg-white rounded-xl shadow-sm p-8 mb-10 animate-fadeIn animation-delay-600">
               <p className="text-neutral-700 mb-4">
-                Smart Rent System was founded in 2020 with a simple mission: to
+                Nest Dosthu System was founded in 2020 with a simple mission: to
                 make property rentals accessible, secure, and enjoyable for
                 everyone. We noticed that the traditional rental process was
                 often complicated, time-consuming, and lacked transparency.
@@ -89,7 +89,7 @@ const About = () => {
                 staying - as smooth as possible.
               </p>
               <p className="text-neutral-700">
-                Today, Smart Rent System hosts thousands of properties across
+                Today, Nest Dosthu System hosts thousands of properties across
                 the globe, helping travelers find their perfect temporary homes
                 while enabling property owners to maximize their rental
                 potential with minimal hassle.
@@ -245,7 +245,7 @@ const About = () => {
           </h2>
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto animate-fadeIn animation-delay-200">
             Whether you're looking for a place to stay or want to share your
-            property with travelers, Smart Rent System is here to help.
+            property with travelers, Nest Dosthu System is here to help.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
@@ -270,3 +270,4 @@ const About = () => {
 };
 
 export default About;
+

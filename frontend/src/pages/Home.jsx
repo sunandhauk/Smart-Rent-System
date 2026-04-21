@@ -235,7 +235,7 @@ const Home = () => {
                   }}
                   className="inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.28em] text-rose-100 backdrop-blur"
                 >
-                  Smart Rent System
+                  Nest Dosthu System
                 </motion.span>
                 <motion.h1
                   variants={headlineContainer}
@@ -546,3 +546,4 @@ const Home = () => {
 };
 
 export default Home;
+

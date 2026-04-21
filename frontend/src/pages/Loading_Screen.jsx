@@ -50,7 +50,7 @@ const LoadingPage = ({ onLoadingComplete }) => {
         </div>
 
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-2 tracking-tight">
-          Smart Rent System
+          Nest Dosthu System
         </h1>
         
         <p className="text-lg text-gray-600 mb-12">

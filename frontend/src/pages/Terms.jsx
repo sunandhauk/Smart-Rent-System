@@ -12,7 +12,7 @@ const Terms = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Terms of Service</h1>
             <p className="text-xl text-primary-100">
-              The rules and guidelines for using Smart Rent System
+              The rules and guidelines for using Nest Dosthu System
             </p>
           </div>
         </div>
@@ -26,12 +26,12 @@ const Terms = () => {
               <p className="text-sm text-neutral-500 mb-8">Last Updated: {lastUpdated}</p>
               
               <p className="lead text-lg text-neutral-700 mb-8">
-                Welcome to Smart Rent System. These Terms of Service govern your access to and use of the Smart Rent System website, apps, and services. By accessing or using our service, you agree to be bound by these terms.
+                Welcome to Nest Dosthu System. These Terms of Service govern your access to and use of the Nest Dosthu System website, apps, and services. By accessing or using our service, you agree to be bound by these terms.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">1. Acceptance of Terms</h2>
               <p className="mb-6">
-                By registering for and/or using the Service in any manner, you agree to these Terms and all other operating rules, policies, and procedures that may be published by Smart Rent System. These Terms apply to all users of the Service, including hosts, guests, and general visitors.
+                By registering for and/or using the Service in any manner, you agree to these Terms and all other operating rules, policies, and procedures that may be published by Nest Dosthu System. These Terms apply to all users of the Service, including hosts, guests, and general visitors.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">2. Account Registration</h2>
@@ -99,20 +99,20 @@ const Terms = () => {
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">6. Fees and Payments</h2>
               <p className="mb-6">
-                Smart Rent System charges service fees to both guests and hosts for use of the platform. These fees are calculated as a percentage of the booking subtotal and are clearly displayed before checkout. By using our Service, you agree to pay all applicable fees. All payments are processed securely through our platform.
+                Nest Dosthu System charges service fees to both guests and hosts for use of the platform. These fees are calculated as a percentage of the booking subtotal and are clearly displayed before checkout. By using our Service, you agree to pay all applicable fees. All payments are processed securely through our platform.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">7. Disclaimers and Limitations of Liability</h2>
               <p className="mb-6">
-                The Service is provided on an "as is" and "as available" basis. Smart Rent System expressly disclaims all warranties of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+                The Service is provided on an "as is" and "as available" basis. Nest Dosthu System expressly disclaims all warranties of any kind, whether express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
               </p>
               <p className="mb-6">
-                In no event shall Smart Rent System be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
+                In no event shall Nest Dosthu System be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the Service.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">8. Indemnification</h2>
               <p className="mb-6">
-                You agree to defend, indemnify, and hold harmless Smart Rent System, its officers, directors, employees, and agents, from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable attorney's fees and costs, arising out of or in any way connected with your access to or use of the Service, your violation of these Terms, or your violation of any rights of another.
+                You agree to defend, indemnify, and hold harmless Nest Dosthu System, its officers, directors, employees, and agents, from and against any claims, liabilities, damages, losses, and expenses, including without limitation reasonable attorney's fees and costs, arising out of or in any way connected with your access to or use of the Service, your violation of these Terms, or your violation of any rights of another.
               </p>
 
               <h2 className="text-2xl font-bold text-neutral-800 mt-10 mb-4">9. Modifications to Terms</h2>
@@ -130,7 +130,7 @@ const Terms = () => {
                 If you have any questions about these Terms, please contact us at:
               </p>
               <div className="bg-neutral-50 p-6 rounded-lg">
-                <p className="mb-2"><strong>Email:</strong> legal@smartrentsystem.com</p>
+                <p className="mb-2"><strong>Email:</strong> legal@Nest Dosthu.com</p>
                 <p className="mb-2"><strong>Postal Address:</strong> 123 Rent Street, City, Country</p>
                 <p><strong>Phone:</strong> +1 (123) 456-7890</p>
               </div>

@@ -20,23 +20,23 @@ const FAQ = () => {
     general: [
       {
         id: 'what-is-smart-rent',
-        question: 'What is Smart Rent System?',
-        answer: 'Smart Rent System is a platform that connects travelers with unique accommodations around the world. Our platform allows hosts to list their properties, and guests to book these spaces. We provide secure payment processing, verified reviews, and customer support to ensure a smooth experience for everyone.'
+        question: 'What is Nest Dosthu System?',
+        answer: 'Nest Dosthu System is a platform that connects travelers with unique accommodations around the world. Our platform allows hosts to list their properties, and guests to book these spaces. We provide secure payment processing, verified reviews, and customer support to ensure a smooth experience for everyone.'
       },
       {
         id: 'how-to-start',
-        question: 'How do I get started with Smart Rent?',
+        question: 'How do I get started with Nest Dosthu?',
         answer: 'Getting started is easy! Simply create an account, fill out your profile information, and you can start searching for properties or list your own space. Browse listings by location, price, amenities, and more to find the perfect place for your next trip.'
       },
       {
         id: 'contact-support',
         question: 'How do I contact customer support?',
-        answer: 'You can reach our customer support team through multiple channels. Use the Contact page on our website, email us at support@smartrentsystem.com, or call our support line at +1 (800) SMART-RENT. Our team is available 24/7 to assist with any questions or concerns.'
+        answer: 'You can reach our customer support team through multiple channels. Use the Contact page on our website, email us at support@Nest Dosthu.com, or call our support line at +1 (800) SMART-RENT. Our team is available 24/7 to assist with any questions or concerns.'
       },
       {
         id: 'app-available',
         question: 'Is there a mobile app available?',
-        answer: 'Yes! The Smart Rent System app is available for both iOS and Android devices. Download it from the App Store or Google Play Store to manage your bookings, message hosts or guests, and browse listings on the go.'
+        answer: 'Yes! The Nest Dosthu System app is available for both iOS and Android devices. Download it from the App Store or Google Play Store to manage your bookings, message hosts or guests, and browse listings on the go.'
       }
     ],
     booking: [
@@ -113,7 +113,7 @@ const FAQ = () => {
       },
       {
         id: 'verify-identity',
-        question: 'How does Smart Rent verify user identities?',
+        question: 'How does Nest Dosthu verify user identities?',
         answer: 'We use a combination of ID verification, email confirmation, phone verification, and payment information to verify user identities. Some bookings may require additional verification steps for enhanced security.'
       },
       {
@@ -166,7 +166,7 @@ const FAQ = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Frequently Asked Questions</h1>
             <p className="text-xl text-primary-100">
-              Find answers to the most common questions about using Smart Rent System
+              Find answers to the most common questions about using Nest Dosthu System
             </p>
           </div>
         </div>
@@ -268,7 +268,7 @@ const FAQ = () => {
               </div>
               <h3 className="text-lg font-medium text-neutral-900 mb-2">Help Center</h3>
               <p className="text-neutral-600 mb-4">
-                Browse comprehensive help guides, tutorials, and troubleshooting tips for using Smart Rent.
+                Browse comprehensive help guides, tutorials, and troubleshooting tips for using Nest Dosthu.
               </p>
               <Link
                 to="/help"

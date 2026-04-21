@@ -81,7 +81,7 @@ const Cancellation = () => {
           <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
             <h2 className="text-2xl font-bold mb-4 text-neutral-800">Understanding Our Policies</h2>
             <p className="text-neutral-600 mb-4">
-              At Smart Rent System, we understand that plans can change. Our cancellation policies are designed to provide clarity and flexibility for both guests and hosts.
+              At Nest Dosthu System, we understand that plans can change. Our cancellation policies are designed to provide clarity and flexibility for both guests and hosts.
             </p>
             <p className="text-neutral-600">
               Each property on our platform has one of the cancellation policies outlined below. The specific policy for a property is clearly displayed on the listing page before you make a booking.

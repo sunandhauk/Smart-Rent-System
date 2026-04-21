@@ -22,21 +22,21 @@ const Help = () => {
     general: [
       {
         id: "what-is-smart-rent",
-        question: "What is Smart Rent?",
+        question: "What is Nest Dosthu?",
         answer:
-          "Smart Rent is a platform that connects property owners with travelers looking for unique and comfortable places to stay. Whether you're looking for a cozy apartment in the city or a beachfront villa, Smart Rent offers a wide range of properties to suit your needs and budget.",
+          "Nest Dosthu is a platform that connects property owners with travelers looking for unique and comfortable places to stay. Whether you're looking for a cozy apartment in the city or a beachfront villa, Nest Dosthu offers a wide range of properties to suit your needs and budget.",
       },
       {
         id: "how-to-use",
-        question: "How do I use Smart Rent?",
+        question: "How do I use Nest Dosthu?",
         answer:
-          "Using Smart Rent is simple. Create an account, search for properties based on your destination and dates, browse through the options, and book the one that suits you best. You can also save properties to your wishlist, message hosts directly, and leave reviews after your stay.",
+          "Using Nest Dosthu is simple. Create an account, search for properties based on your destination and dates, browse through the options, and book the one that suits you best. You can also save properties to your wishlist, message hosts directly, and leave reviews after your stay.",
       },
       {
         id: "customer-service",
         question: "How do I contact customer service?",
         answer:
-          "You can contact our customer service team through various channels including email support at help@smartrent.com, our 24/7 live chat available on our website, or by phone at +1-800-SMART-RENT. We aim to respond to all inquiries within 24 hours.",
+          "You can contact our customer service team through various channels including email support at help@nestdosthu.com, our 24/7 live chat available on our website, or by phone at +1-800-SMART-RENT. We aim to respond to all inquiries within 24 hours.",
       },
     ],
     account: [
@@ -134,7 +134,7 @@ const Help = () => {
               Help Guides
             </h2>
             <p className="text-neutral-600 mb-6">
-              Detailed guides on how to use Smart Rent features and services.
+              Detailed guides on how to use Nest Dosthu features and services.
             </p>
 
             <div className="space-y-6">
@@ -351,7 +351,7 @@ const Help = () => {
               </h3>
               <p className="text-neutral-600 mb-6 max-w-md mx-auto">
                 Our community forum is currently in development. Check back soon
-                to join discussions with other Smart Rent users!
+                to join discussions with other Nest Dosthu users!
               </p>
               <button
                 onClick={() => setActiveTab("main")}
@@ -432,7 +432,7 @@ const Help = () => {
                   Help Guides
                 </h2>
                 <p className="text-sm text-neutral-600 mb-4">
-                  Detailed guides on how to use Smart Rent features
+                  Detailed guides on how to use Nest Dosthu features
                 </p>
                 <div className="flex flex-col space-y-2">
                   <button
@@ -641,10 +641,10 @@ const Help = () => {
                   any questions or issues.
                 </p>
                 <a
-                  href="mailto:support@smartrent.com"
+                  href="mailto:support@nestdosthu.com"
                   className="text-primary-600 hover:text-primary-700 text-sm font-medium"
                 >
-                  support@smartrent.com
+                  support@nestdosthu.com
                 </a>
               </div>
 
@@ -730,3 +730,4 @@ const Help = () => {
 };
 
 export default Help;
+

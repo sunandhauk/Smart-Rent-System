@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 // Load environment variables
 dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
+const passport = require("./config/passport");
 
 const app = express();
 app.set("trust proxy", 1);
@@ -58,6 +59,7 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(passport.initialize());
 
 // Handle preflight requests
 app.options("*", cors(corsOptions));

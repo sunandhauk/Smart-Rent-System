@@ -10,7 +10,7 @@ const Safety = () => {
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Your Safety Matters</h1>
             <p className="text-xl text-primary-100">
-              Smart Rent System is committed to creating a safe environment for our hosts and guests
+              Nest Dosthu System is committed to creating a safe environment for our hosts and guests
             </p>
           </div>
         </div>
@@ -23,7 +23,7 @@ const Safety = () => {
           <div className="bg-white rounded-xl shadow-sm p-8 mb-8">
             <h2 className="text-2xl font-bold mb-4 text-neutral-800">Our Commitment to Safety</h2>
             <p className="text-neutral-600 mb-4">
-              At Smart Rent System, we prioritize the safety and well-being of our community. 
+              At Nest Dosthu System, we prioritize the safety and well-being of our community. 
               We've implemented comprehensive safety measures, verification processes, and 
               support systems to ensure that both hosts and guests can use our platform with 
               confidence and peace of mind.
@@ -103,7 +103,7 @@ const Safety = () => {
                   <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  <span>Keep communication within the Smart Rent System platform for your protection.</span>
+                  <span>Keep communication within the Nest Dosthu System platform for your protection.</span>
                 </li>
                 <li className="flex items-start">
                   <svg className="w-5 h-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -198,7 +198,7 @@ const Safety = () => {
             </div>
             
             <div>
-              <h3 className="text-lg font-semibold mb-3 text-neutral-800">Smart Rent System Urgent Support</h3>
+              <h3 className="text-lg font-semibold mb-3 text-neutral-800">Nest Dosthu System Urgent Support</h3>
               <p className="text-neutral-600 mb-3">
                 For urgent situations that aren't life-threatening but require immediate assistance:
               </p>
@@ -209,7 +209,7 @@ const Safety = () => {
                 </div>
                 <div className="bg-white px-5 py-3 rounded-lg border border-neutral-200">
                   <p className="text-sm text-neutral-500 mb-1">Safety Email</p>
-                  <p className="font-semibold">safety@smartrent.com</p>
+                  <p className="font-semibold">safety@nestdosthu.com</p>
                 </div>
               </div>
             </div>

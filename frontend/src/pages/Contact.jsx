@@ -93,7 +93,7 @@ const Contact = () => {
                 <div>
                   <p className="font-medium text-neutral-900">Email</p>
                   <p className="text-neutral-600 text-sm">
-                    support@smartrent.com
+                    support@nestdosthu.com
                   </p>
                   <p className="text-neutral-400 text-xs">
                     We'll respond within 24 hours
@@ -268,3 +268,4 @@ const Contact = () => {
 };
 
 export default Contact;
+
