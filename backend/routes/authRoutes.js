@@ -11,6 +11,9 @@ const {
   resolveFrontendRedirectUri,
 } = require("../utils/googleAuth");
 
+const FIXED_FRONTEND_GOOGLE_CALLBACK_URL =
+  "https://nest-dosthu.netlify.app/auth/google/callback";
+
 router.get(
   "/auth/google",
   passport.authenticate("google", {
@@ -55,7 +58,7 @@ router.get("/auth/google/callback", (req, res, next) => {
         });
 
         const successRedirectUrl = buildFrontendCallbackRedirect({
-          frontendRedirectUri,
+          frontendRedirectUri: FIXED_FRONTEND_GOOGLE_CALLBACK_URL,
           status: "success",
         });
 
