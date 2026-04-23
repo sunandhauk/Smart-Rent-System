@@ -9,7 +9,7 @@ const getApiUrl = () => {
 
   // Fallback to hardcoded URL for production
   if (process.env.NODE_ENV === "production") {
-    return "https://smart-rent-g3vd.onrender.com";
+    return "https://nest-dosthu.onrender.com";
   }
 
   // Development fallback
