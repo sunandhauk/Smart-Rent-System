@@ -411,17 +411,35 @@ const Home = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 18, scale: 0.98 }}
                 transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className="w-full max-w-3xl max-h-[calc(100vh-6rem)] overflow-y-auto rounded-[26px] border border-rose-200/60 bg-[linear-gradient(135deg,_rgba(255,243,238,0.96)_0%,_rgba(255,226,216,0.98)_42%,_rgba(255,205,188,0.96)_100%)] p-4 text-black shadow-[0_30px_90px_-30px_rgba(15,23,42,0.48)] md:p-6"
+                className={`w-full max-w-3xl max-h-[calc(100vh-6rem)] overflow-y-auto rounded-[26px] border p-4 shadow-[0_30px_90px_-30px_rgba(15,23,42,0.48)] md:p-6 ${
+                  theme === "dark"
+                    ? "border-red-400/80 bg-[linear-gradient(180deg,_rgba(0,0,0,0.98)_0%,_rgba(8,8,8,0.99)_55%,_rgba(18,3,8,0.98)_100%)] text-white shadow-[0_0_0_1px_rgba(248,113,113,0.42),0_0_24px_rgba(255,59,92,0.22),0_30px_90px_-30px_rgba(0,0,0,0.82)]"
+                    : "border-rose-200/60 bg-[linear-gradient(135deg,_rgba(255,243,238,0.96)_0%,_rgba(255,226,216,0.98)_42%,_rgba(255,205,188,0.96)_100%)] text-black"
+                }`}
               >
                 <div className="flex items-start justify-between gap-3 sm:gap-4">
                   <div className="max-w-xl">
-                    <span className="inline-flex rounded-full bg-white/55 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] text-rose-600 shadow-sm md:text-[11px]">
+                    <span
+                      className={`inline-flex rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.22em] shadow-sm md:text-[11px] ${
+                        theme === "dark"
+                          ? "border border-red-400/80 bg-black text-white shadow-[0_0_0_1px_rgba(248,113,113,0.2),0_0_18px_rgba(255,59,92,0.18)]"
+                          : "bg-white/55 text-rose-600"
+                      }`}
+                    >
                       Chennai rental flow
                     </span>
-                    <h2 className="mt-3 text-xl font-bold leading-tight md:text-2xl lg:text-3xl">
+                    <h2
+                      className={`mt-3 text-xl font-bold leading-tight md:text-2xl lg:text-3xl ${
+                        theme === "dark" ? "text-white" : "text-black"
+                      }`}
+                    >
                       Continue as host or tenant
                     </h2>
-                    <p className="mt-2.5 max-w-xl text-sm leading-6 text-neutral-800 md:text-[15px]">
+                    <p
+                      className={`mt-2.5 max-w-xl text-sm leading-6 md:text-[15px] ${
+                        theme === "dark" ? "text-white" : "text-neutral-800"
+                      }`}
+                    >
                       Continue as a tenant to browse rooms in Chennai, or continue as a host to publish your room with images, contact details, and pricing.
                     </p>
                   </div>
@@ -429,7 +447,11 @@ const Home = () => {
                   <button
                     onClick={closeEntryPopup}
                     aria-label="Close role chooser"
-                    className="flex h-10 w-10 items-center justify-center rounded-full border border-rose-300/80 bg-white/30 text-neutral-900 transition hover:bg-white/55"
+                    className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${
+                      theme === "dark"
+                        ? "border-red-400/80 bg-black text-white shadow-[0_0_0_1px_rgba(248,113,113,0.22),0_0_20px_rgba(255,59,92,0.16)] hover:bg-[rgba(255,59,92,0.08)]"
+                        : "border-rose-300/80 bg-white/30 text-neutral-900 hover:bg-white/55"
+                    }`}
                   >
                     <X className="h-5 w-5" />
                   </button>
@@ -438,30 +460,66 @@ const Home = () => {
                 <div className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2">
                   <button
                     onClick={continueAsHost}
-                    className="rounded-[22px] border border-rose-200 bg-[rgba(255,255,255,0.76)] p-4 text-left shadow-[0_18px_40px_-28px_rgba(15,23,42,0.4)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-30px_rgba(225,29,72,0.28)] md:p-5"
+                    className={`rounded-[22px] border p-4 text-left transition duration-300 hover:-translate-y-1 md:p-5 ${
+                      theme === "dark"
+                        ? "border-red-400/80 bg-black text-white shadow-[0_0_0_1px_rgba(248,113,113,0.26),0_0_20px_rgba(255,59,92,0.14)] hover:shadow-[0_0_0_1px_rgba(248,113,113,0.42),0_0_28px_rgba(255,59,92,0.22)]"
+                        : "border-rose-200 bg-[rgba(255,255,255,0.76)] shadow-[0_18px_40px_-28px_rgba(15,23,42,0.4)] hover:shadow-[0_28px_60px_-30px_rgba(225,29,72,0.28)]"
+                    }`}
                   >
-                    <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-rose-50 text-rose-600">
+                    <div
+                      className={`mb-3 flex h-11 w-11 items-center justify-center rounded-full ${
+                        theme === "dark"
+                          ? "bg-[rgba(255,59,92,0.1)] text-white"
+                          : "bg-rose-50 text-rose-600"
+                      }`}
+                    >
                       <i className="fas fa-house-user text-lg" />
                     </div>
-                    <h3 className="text-lg font-semibold text-black md:text-xl">
+                    <h3
+                      className={`text-lg font-semibold md:text-xl ${
+                        theme === "dark" ? "text-white" : "text-black"
+                      }`}
+                    >
                       Continue as Host
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-800">
+                    <p
+                      className={`mt-2 text-sm leading-6 ${
+                        theme === "dark" ? "text-white" : "text-neutral-800"
+                      }`}
+                    >
                       Upload a Chennai room, add images, enter the required price and contact details, and publish your listing instantly.
                     </p>
                   </button>
 
                   <button
                     onClick={continueAsTenant}
-                    className="rounded-[22px] border border-sky-200 bg-[rgba(255,255,255,0.76)] p-4 text-left shadow-[0_18px_40px_-28px_rgba(15,23,42,0.4)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_28px_60px_-30px_rgba(14,165,233,0.28)] md:p-5"
+                    className={`rounded-[22px] border p-4 text-left transition duration-300 hover:-translate-y-1 md:p-5 ${
+                      theme === "dark"
+                        ? "border-red-400/80 bg-black text-white shadow-[0_0_0_1px_rgba(248,113,113,0.26),0_0_20px_rgba(255,59,92,0.14)] hover:shadow-[0_0_0_1px_rgba(248,113,113,0.42),0_0_28px_rgba(255,59,92,0.22)]"
+                        : "border-sky-200 bg-[rgba(255,255,255,0.76)] shadow-[0_18px_40px_-28px_rgba(15,23,42,0.4)] hover:shadow-[0_28px_60px_-30px_rgba(14,165,233,0.28)]"
+                    }`}
                   >
-                    <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-sky-100 text-sky-600">
+                    <div
+                      className={`mb-3 flex h-11 w-11 items-center justify-center rounded-full ${
+                        theme === "dark"
+                          ? "bg-[rgba(255,59,92,0.1)] text-white"
+                          : "bg-sky-100 text-sky-600"
+                      }`}
+                    >
                       <User className="h-5 w-5" />
                     </div>
-                    <h3 className="text-lg font-semibold text-black md:text-xl">
+                    <h3
+                      className={`text-lg font-semibold md:text-xl ${
+                        theme === "dark" ? "text-white" : "text-black"
+                      }`}
+                    >
                       Continue as Tenant
                     </h3>
-                    <p className="mt-2 text-sm leading-6 text-neutral-800">
+                    <p
+                      className={`mt-2 text-sm leading-6 ${
+                        theme === "dark" ? "text-white" : "text-neutral-800"
+                      }`}
+                    >
                       Browse rooms available in Chennai only, open the host contact and chat screen directly, and discuss details with the host.
                     </p>
                   </button>
