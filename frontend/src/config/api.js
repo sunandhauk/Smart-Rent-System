@@ -1,7 +1,19 @@
 import axios from "axios";
 
+const isLocalFrontendHost = () => {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return ["localhost", "127.0.0.1"].includes(window.location.hostname);
+};
+
 // Get the API URL from environment or use fallback
 const getApiUrl = () => {
+  if (isLocalFrontendHost()) {
+    return "http://localhost:8000";
+  }
+
   // Check if we're in production and environment variable is set
   if (process.env.NODE_ENV === "production" && process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
@@ -12,8 +24,8 @@ const getApiUrl = () => {
     return "https://nest-dosthu.onrender.com";
   }
 
-  // Development fallback
-  return process.env.REACT_APP_API_URL || "https://nest-dosthu.onrender.com";
+  // Development fallback should stay on the local backend unless explicitly overridden
+  return process.env.REACT_APP_API_URL || "http://localhost:8000";
 };
 
 

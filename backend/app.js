@@ -7,12 +7,35 @@ const fs = require("fs");
 const cookieParser = require("cookie-parser");
 
 // Load environment variables
-dotenv.config();
-console.log("MONGO_URI:", process.env.MONGO_URI);
+dotenv.config({ path: path.join(__dirname, ".env") });
 const passport = require("./config/passport");
 
 const app = express();
 app.set("trust proxy", 1);
+
+const parseOrigin = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch (error) {
+    return null;
+  }
+};
+
+const allowedOrigins = new Set(
+  [
+    process.env.FRONTEND_URL,
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+  ]
+    .map(parseOrigin)
+    .filter(Boolean)
+);
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -21,12 +44,19 @@ const corsOptions = {
     // Allow Postman, curl, server-to-server, OAuth redirects
     if (!origin) return callback(null, true);
 
+    const normalizedOrigin = parseOrigin(origin);
+
+    if (normalizedOrigin && allowedOrigins.has(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
     // Allow Netlify (production + previews)
     if (origin.endsWith(".netlify.app")) {
       return callback(null, true);
     }
 
     // ❗ DO NOT throw error
+    console.warn(`Blocked by CORS: ${origin}`);
     return callback(null, false);
   },
   credentials: true,
@@ -54,18 +84,66 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+const getMongoConnectionCandidates = () => {
+  const configuredUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  const candidates = [];
 
-// MongoDB Connection with better error handling
-mongoose
-  .connect(mongoUri)
-  .then(() => {
-    console.log("MongoDB Connected Successfully");
-  })
-  .catch((err) => {
-    console.error("MongoDB Connection Error:", err);
-    process.exit(1); // Exit if database connection fails
-  });
+  if (configuredUri) {
+    candidates.push({
+      label: "configured MongoDB URI",
+      uri: configuredUri,
+    });
+  }
+
+  if (process.env.NODE_ENV !== "production") {
+    candidates.push(
+      {
+        label: "local MongoDB on 127.0.0.1",
+        uri: "mongodb://127.0.0.1:27017/smartrent",
+      },
+      {
+        label: "Docker MongoDB service",
+        uri: "mongodb://mongodb:27017/smartrent",
+      }
+    );
+  }
+
+  return candidates.filter(
+    (candidate, index, allCandidates) =>
+      allCandidates.findIndex(({ uri }) => uri === candidate.uri) === index
+  );
+};
+
+const connectToMongo = async () => {
+  const candidates = getMongoConnectionCandidates();
+
+  if (!candidates.length) {
+    throw new Error(
+      "No MongoDB connection string configured. Add MONGO_URI or MONGODB_URI to backend/.env."
+    );
+  }
+
+  const connectionErrors = [];
+
+  for (const candidate of candidates) {
+    try {
+      console.log(`Attempting MongoDB connection using ${candidate.label}...`);
+      await mongoose.connect(candidate.uri);
+      console.log(`MongoDB Connected Successfully using ${candidate.label}`);
+      return;
+    } catch (error) {
+      connectionErrors.push(`${candidate.label}: ${error.message}`);
+      console.warn(`MongoDB connection failed for ${candidate.label}: ${error.message}`);
+    }
+  }
+
+  throw new Error(connectionErrors.join(" | "));
+};
+
+connectToMongo().catch((err) => {
+  console.error("MongoDB Connection Error:", err);
+  process.exit(1);
+});
 
 // Health check endpoint
 app.get("/api/health", (req, res) => {
