@@ -11,6 +11,18 @@ import {
 } from "../utils/chennaiListings";
 import { useAuth } from "../contexts/AuthContext";
 import { useAppSettings } from "../contexts/AppSettingsContext";
+import api from "../config/api";
+import { getDefaultPropertyVariant } from "../utils/propertyVariants";
+import {
+  addStoredWishlistItem,
+  getPropertyWishlistId,
+  getStoredWishlistItems,
+  getWishlistItemKey,
+  isMongoObjectId,
+  mergeWishlistItems,
+  normalizeWishlistItem,
+  removeStoredWishlistItem,
+} from "../utils/wishlist";
 
 const categories = [
   { id: "all", label: "All" },
@@ -42,12 +54,43 @@ const Listings = () => {
   const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [wishlistKeys, setWishlistKeys] = useState([]);
   const [filters, setFilters] = useState({
     location: CHENNAI_CITY,
     priceMin: "",
     priceMax: "",
   });
   const [activeCategory, setActiveCategory] = useState("all");
+
+  useEffect(() => {
+    setWishlistKeys(getStoredWishlistItems().map((item) => item.key));
+  }, []);
+
+  useEffect(() => {
+    const loadWishlistIds = async () => {
+      const localItems = getStoredWishlistItems();
+
+      if (!currentUser) {
+        setWishlistKeys(localItems.map((item) => item.key));
+        return;
+      }
+
+      try {
+        const res = await api.get("/api/wishlist");
+        const backendItems = Array.isArray(res.data)
+          ? res.data.map((item) => normalizeWishlistItem(item, item.property))
+          : [];
+        setWishlistKeys(
+          mergeWishlistItems(localItems, backendItems).map((item) => item.key)
+        );
+      } catch (error) {
+        console.error("Unable to load wishlist ids", error);
+        setWishlistKeys(localItems.map((item) => item.key));
+      }
+    };
+
+    loadWishlistIds();
+  }, [currentUser]);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -157,6 +200,56 @@ const Listings = () => {
     }
 
     navigate(`/properties/${property._id}`);
+  };
+
+  const handleWishlistToggle = async (event, property) => {
+    event.stopPropagation();
+
+    if (!currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    const propertyId = getPropertyWishlistId(property);
+    if (!propertyId) return;
+    const variant = getDefaultPropertyVariant(property);
+    const wishlistItem = normalizeWishlistItem({
+      propertyId,
+      property,
+      variant,
+    });
+    const wishlistKey = getWishlistItemKey(propertyId, variant.id);
+
+    const isSaved = wishlistKeys.includes(wishlistKey);
+    const nextItems = isSaved
+      ? removeStoredWishlistItem(wishlistKey)
+      : addStoredWishlistItem(wishlistItem);
+
+    setWishlistKeys((prev) =>
+      isSaved
+        ? prev.filter((key) => key !== wishlistKey)
+        : [...new Set([...prev, wishlistKey])]
+    );
+
+    if (!isMongoObjectId(propertyId)) {
+      return;
+    }
+
+    try {
+      await api.post(`/api/wishlist/${propertyId}`, {
+        variant,
+      });
+      setWishlistKeys(nextItems.map((item) => item.key));
+    } catch (error) {
+      console.error("Unable to update wishlist", error);
+      if (isSaved) {
+        addStoredWishlistItem(wishlistItem);
+        setWishlistKeys((prev) => [...new Set([...prev, wishlistKey])]);
+      } else {
+        removeStoredWishlistItem(wishlistKey);
+        setWishlistKeys((prev) => prev.filter((key) => key !== wishlistKey));
+      }
+    }
   };
 
   if (loading) {
@@ -327,6 +420,11 @@ const Listings = () => {
         ) : (
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-3">
             {displayedProperties.map((property, index) => {
+              const propertyId = getPropertyWishlistId(property);
+              const defaultVariant = getDefaultPropertyVariant(property);
+              const isWishlisted = wishlistKeys.includes(
+                getWishlistItemKey(propertyId, defaultVariant.id)
+              );
               const propertyImages =
                 Array.isArray(property.images) && property.images.length > 0
                   ? property.images
@@ -357,6 +455,20 @@ const Listings = () => {
                       propertyId={property._id}
                     />
                     <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/25 to-transparent" />
+                    <button
+                      type="button"
+                      onClick={(event) => handleWishlistToggle(event, property)}
+                      aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+                      className={`absolute left-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-full border text-lg shadow-lg backdrop-blur transition ${
+                        isWishlisted
+                          ? "border-red-500 bg-red-500 text-white"
+                          : theme === "dark"
+                            ? "border-white/20 bg-black/70 text-white hover:border-red-300 hover:text-red-300"
+                            : "border-white/80 bg-white/90 text-neutral-700 hover:text-red-500"
+                      }`}
+                    >
+                      <i className={`${isWishlisted ? "fas" : "far"} fa-heart`} />
+                    </button>
                     <span
                       className={`absolute right-4 top-4 rounded-full px-4 py-2 text-base font-bold shadow-lg ${
                         theme === "dark" ? "bg-black text-white" : "bg-white text-orange-700"

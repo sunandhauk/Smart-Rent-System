@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import api from "../config/api";
 import PropertyImage from "../components/PropertyImage";
 import StaticMap from "../components/StaticMap";
@@ -8,6 +8,20 @@ import dummyProperties from "../data/dummyProperties";
 import { useAuth } from "../contexts/AuthContext";
 import { useAppSettings } from "../contexts/AppSettingsContext";
 import { getStoredHostListings, isChennaiProperty } from "../utils/chennaiListings";
+import {
+  getPropertyVariants,
+  getWishlistVariantForProperty,
+} from "../utils/propertyVariants";
+import {
+  addStoredWishlistItem,
+  getPropertyWishlistId,
+  getStoredWishlistItems,
+  getWishlistItemKey,
+  isMongoObjectId,
+  mergeWishlistItems,
+  normalizeWishlistItem,
+  removeStoredWishlistItem,
+} from "../utils/wishlist";
 
 const DETAIL_IMAGE_FALLBACKS = {
   room: [
@@ -73,6 +87,7 @@ const hostFromProperty = (property) => {
 
 const PropertyDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { formatPrice, theme } = useAppSettings();
@@ -83,6 +98,8 @@ const PropertyDetail = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [reservation, setReservation] = useState({ checkIn: "", checkOut: "", guests: 1 });
   const [fallbackHost, setFallbackHost] = useState(null);
+  const variants = useMemo(() => getPropertyVariants(property), [property]);
+  const [selectedVariantId, setSelectedVariantId] = useState("");
 
   useEffect(() => {
     const load = async () => {
@@ -114,21 +131,65 @@ const PropertyDetail = () => {
   }, [id]);
 
   useEffect(() => {
+    const requestedVariantId = new URLSearchParams(location.search).get("variant");
+
+    if (!variants.length) {
+      setSelectedVariantId("");
+      return;
+    }
+
+    if (
+      requestedVariantId &&
+      variants.some((variant) => String(variant.id) === String(requestedVariantId))
+    ) {
+      setSelectedVariantId(String(requestedVariantId));
+      return;
+    }
+
+    setSelectedVariantId((prev) =>
+      variants.some((variant) => variant.id === prev) ? prev : variants[0].id
+    );
+  }, [location.search, variants]);
+
+  useEffect(() => {
     const checkSaved = async () => {
-      if (!currentUser || !property?._id) return;
+      const propertyId = getPropertyWishlistId(property);
+      if (!propertyId) return;
+
+      const selectedVariant = getWishlistVariantForProperty(property, selectedVariantId);
+      const wishlistKey = getWishlistItemKey(propertyId, selectedVariant.id);
+      const localItems = getStoredWishlistItems();
+
+      if (!currentUser) {
+        setIsSaved(localItems.some((item) => item.key === wishlistKey));
+        return;
+      }
+
       try {
         const res = await api.get("/api/wishlist");
-        setIsSaved(res.data.some((item) => String(item._id) === String(property._id)));
+        const backendItems = Array.isArray(res.data)
+          ? res.data.map((item) => normalizeWishlistItem(item, item.property))
+          : [];
+        setIsSaved(
+          mergeWishlistItems(localItems, backendItems).some(
+            (item) => item.key === wishlistKey
+          )
+        );
       } catch (err) {
         console.error(err);
+        setIsSaved(localItems.some((item) => item.key === wishlistKey));
       }
     };
     checkSaved();
-  }, [currentUser, property?._id]);
+  }, [currentUser, property, selectedVariantId]);
 
   const host = useMemo(() => hostFromProperty(property), [property]);
   const resolvedHost = host.id ? host : fallbackHost || host;
   const images = useMemo(() => buildDetailGalleryImages(property), [property]);
+  const selectedVariant = useMemo(
+    () => getWishlistVariantForProperty(property, selectedVariantId),
+    [property, selectedVariantId]
+  );
   const nights = useMemo(() => {
     if (!reservation.checkIn || !reservation.checkOut) return 0;
     const diff = (new Date(reservation.checkOut) - new Date(reservation.checkIn)) / 86400000;
@@ -173,11 +234,41 @@ const PropertyDetail = () => {
 
   const handleSave = async () => {
     if (!currentUser) return navigate("/login");
+
+    const propertyId = getPropertyWishlistId(property);
+    if (!propertyId) return;
+    const wishlistItem = normalizeWishlistItem({
+      propertyId,
+      property,
+      variant: selectedVariant,
+    });
+    const wishlistKey = wishlistItem.key;
+
+    const nextSaved = !isSaved;
+    setIsSaved(nextSaved);
+
+    if (nextSaved) {
+      addStoredWishlistItem(wishlistItem);
+    } else {
+      removeStoredWishlistItem(wishlistKey);
+    }
+
+    if (!isMongoObjectId(propertyId)) {
+      return;
+    }
+
     try {
-      await api.post(`/api/wishlist/${property._id}`, {});
-      setIsSaved((prev) => !prev);
+      await api.post(`/api/wishlist/${propertyId}`, {
+        variant: selectedVariant,
+      });
     } catch (err) {
       console.error(err);
+      setIsSaved(!nextSaved);
+      if (nextSaved) {
+        removeStoredWishlistItem(wishlistKey);
+      } else {
+        addStoredWishlistItem(wishlistItem);
+      }
     }
   };
 
@@ -296,6 +387,46 @@ const PropertyDetail = () => {
                 <div className={`rounded-2xl px-4 py-4 text-sm ${theme === "dark" ? "bg-black text-white" : "bg-orange-50 text-neutral-700"}`}>{property.location?.locality || property.location?.city || "Prime locality"} with better connectivity.</div>
               </div>
 
+              {variants.length > 0 && (
+                <div className="mb-6">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className={`text-lg font-semibold ${theme === "dark" ? "text-white" : "text-neutral-900"}`}>Choose a stay option</h3>
+                      <p className={`text-sm ${theme === "dark" ? "text-white" : "text-neutral-500"}`}>The wishlist saves the exact option selected here.</p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${theme === "dark" ? "bg-black text-white" : "bg-orange-50 text-orange-700"}`}>{selectedVariant.label}</span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                    {variants.map((variant) => {
+                      const isSelected = variant.id === selectedVariant.id;
+                      return (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => setSelectedVariantId(variant.id)}
+                          className={`rounded-2xl border px-4 py-4 text-left transition ${
+                            isSelected
+                              ? "border-red-500 bg-red-50 text-neutral-900"
+                              : theme === "dark"
+                                ? "border-red-400/30 bg-black text-white hover:border-red-300"
+                                : "border-neutral-200 bg-white text-neutral-700 hover:border-orange-300"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="font-semibold">{variant.label}</p>
+                              <p className={`mt-1 text-sm ${isSelected ? "text-neutral-700" : theme === "dark" ? "text-white" : "text-neutral-500"}`}>{variant.description || "Standard stay option for this listing."}</p>
+                            </div>
+                            {isSelected && <i className="fas fa-check-circle text-red-500" />}
+                          </div>
+                          <p className="mt-3 text-sm font-semibold">Rs.{variant.price}/month</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col gap-3 sm:flex-row">
                 {resolvedHost.phone && <a href={`tel:${resolvedHost.phone}`} className={`inline-flex items-center justify-center rounded-2xl border px-4 py-3 text-sm font-medium ${theme === "dark" ? "border-red-400/50 bg-black text-white hover:border-red-300" : "border-neutral-200 bg-white text-neutral-700 hover:border-primary-200 hover:text-primary-700"}`}><i className="fas fa-phone-alt mr-2" />{resolvedHost.phone}</a>}
                 <button onClick={handleChat} disabled={!resolvedHost.id || currentUser?.role === "host"} className="inline-flex items-center justify-center rounded-2xl bg-red-600 px-4 py-3 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"><i className="fas fa-comments mr-2" />{currentUser?.role === "host" ? "Host Inbox Only" : "Chat with Host"}</button>
@@ -343,8 +474,12 @@ const PropertyDetail = () => {
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-1">
             <div className={`sticky top-24 rounded-[28px] border p-6 shadow-[0_24px_60px_-34px_rgba(15,23,42,0.24)] ${theme === "dark" ? "border-red-400/50 bg-black" : "border-orange-200/70 bg-white"}`}>
               <div className="mb-4 flex items-start justify-between">
-                <div><span className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-neutral-800"}`}>{formatPrice(property.price || 100)}</span><span className={theme === "dark" ? "text-white" : "text-neutral-600"}> / month</span></div>
+                <div><span className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-neutral-800"}`}>{formatPrice(selectedVariant.price || property.price || 100)}</span><span className={theme === "dark" ? "text-white" : "text-neutral-600"}> / month</span></div>
                 <div className={`text-sm ${theme === "dark" ? "text-white" : "text-neutral-600"}`}><i className="fas fa-star mr-1 text-yellow-400" />{property.averageRating || property.rating || 4.8}</div>
+              </div>
+              <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm ${theme === "dark" ? "border-red-400/30 bg-black text-white" : "border-orange-100 bg-orange-50 text-neutral-700"}`}>
+                <p className="font-semibold">{selectedVariant.label}</p>
+                <p className="mt-1">{selectedVariant.description || "This is the option that will be saved in the wishlist."}</p>
               </div>
               <div className={`mb-4 rounded-2xl px-4 py-3 text-sm leading-6 ${theme === "dark" ? "bg-black text-white" : "bg-orange-50 text-orange-700"}`}>Interested in this room? Open a direct chat with the host to discuss rent and move-in details.</div>
               <div className={`mb-4 overflow-hidden rounded-2xl border ${theme === "dark" ? "border-red-400/40" : "border-neutral-200"}`}>
@@ -357,10 +492,10 @@ const PropertyDetail = () => {
               <button onClick={() => (currentUser ? navigate("/payment", { state: { propertyId: property._id, property } }) : navigate("/login"))} className="mb-4 w-full rounded-lg bg-red-600 py-3 font-medium text-white hover:bg-red-700">Reserve</button>
               <button onClick={handleChat} disabled={!resolvedHost.id || currentUser?.role === "host"} className={`mb-4 w-full rounded-lg border py-3 font-medium disabled:cursor-not-allowed disabled:opacity-60 ${theme === "dark" ? "border-red-400/40 bg-black text-white hover:border-red-300" : "border-neutral-200 bg-white text-neutral-700 hover:border-primary-200 hover:text-primary-700"}`}><i className="fas fa-comments mr-2" />{currentUser?.role === "host" ? "Host Inbox Only" : "Chat Host Now"}</button>
               <div className={`space-y-3 text-sm ${theme === "dark" ? "text-white" : "text-neutral-700"}`}>
-                <div className="flex justify-between"><span>{formatPrice(property.price || 100)} x {nights} night{nights !== 1 ? "s" : ""}</span><span>{formatPrice((property.price || 100) * nights)}</span></div>
+                <div className="flex justify-between"><span>{formatPrice(selectedVariant.price || property.price || 100)} x {nights} night{nights !== 1 ? "s" : ""}</span><span>{formatPrice((selectedVariant.price || property.price || 100) * nights)}</span></div>
                 <div className="flex justify-between"><span>Cleaning fee</span><span>{formatPrice(60)}</span></div>
                 <div className="flex justify-between"><span>Service fee</span><span>{formatPrice(75)}</span></div>
-                <div className={`flex justify-between border-t pt-3 font-semibold ${theme === "dark" ? "border-red-400/30" : "border-neutral-200"}`}><span>Total before taxes</span><span>{formatPrice((property.price || 100) * nights + 135)}</span></div>
+                <div className={`flex justify-between border-t pt-3 font-semibold ${theme === "dark" ? "border-red-400/30" : "border-neutral-200"}`}><span>Total before taxes</span><span>{formatPrice((selectedVariant.price || property.price || 100) * nights + 135)}</span></div>
               </div>
             </div>
           </motion.div>

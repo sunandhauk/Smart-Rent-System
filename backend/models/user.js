@@ -3,6 +3,43 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
+const wishlistItemSchema = new mongoose.Schema(
+  {
+    property: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Property",
+      required: true,
+    },
+    variantId: {
+      type: String,
+      default: "default",
+      trim: true,
+    },
+    variantLabel: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    variantPrice: {
+      type: Number,
+      default: 0,
+    },
+    variantDescription: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    variantMeta: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+  },
+  {
+    _id: true,
+    timestamps: true,
+  }
+);
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -69,6 +106,7 @@ const userSchema = new mongoose.Schema(
         ref: "Property",
       },
     ],
+    wishlistItems: [wishlistItemSchema],
     bookings: [
       {
         type: mongoose.Schema.Types.ObjectId,
