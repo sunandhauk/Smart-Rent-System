@@ -119,6 +119,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const applyOAuthRedirectAuth = (authData) => {
+    try {
+      setError("");
+
+      if (!applyAuthenticatedUser(authData)) {
+        return { success: false, error: "Unable to restore Google session." };
+      }
+
+      return { success: true, data: authData };
+    } catch (err) {
+      return { success: false, error: "Unable to restore Google session." };
+    }
+  };
+
   const completeOAuthRedirectLogin = async () => {
     try {
       setError("");
@@ -296,6 +310,7 @@ export function AuthProvider({ children }) {
     resetPassword,
     socialLogin,
     googleAuth,
+    applyOAuthRedirectAuth,
     completeOAuthRedirectLogin,
     updateProfileImage,
     removeProfileImage,

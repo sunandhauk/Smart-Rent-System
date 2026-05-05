@@ -57,16 +57,99 @@ const generateUniqueUsername = async (email, firstName, lastName) => {
 const normalizeRequestedRole = (role) => (role === "host" ? "host" : "user");
 const DEMO_HOST_EMAIL = "host@smartrent.com";
 
-// Helper to set refresh token cookie
-const setRefreshTokenCookie = (res, refreshToken) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  res.cookie("refreshToken", refreshToken, {
+const parseOrigin = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return new URL(value).origin;
+  } catch (error) {
+    return null;
+  }
+};
+
+const resolveRequestOrigin = (req) => {
+  if (!req) {
+    return null;
+  }
+
+  const protocol =
+    req.headers["x-forwarded-proto"]?.split(",")[0]?.trim() || req.protocol;
+  const host = req.get("host");
+
+  if (!protocol || !host) {
+    return null;
+  }
+
+  return `${protocol}://${host}`;
+};
+
+const isLocalOrigin = (origin) => {
+  if (!origin) {
+    return false;
+  }
+
+  try {
+    const { hostname, protocol } = new URL(origin);
+    return (
+      protocol === "http:" &&
+      ["localhost", "127.0.0.1", "::1"].includes(hostname)
+    );
+  } catch (error) {
+    return false;
+  }
+};
+
+const getSiteKey = (origin) => {
+  if (!origin) {
+    return null;
+  }
+
+  try {
+    const { protocol, hostname } = new URL(origin);
+
+    if (["localhost", "127.0.0.1", "::1"].includes(hostname)) {
+      return `${protocol}//local`;
+    }
+
+    return `${protocol}//${hostname}`;
+  } catch (error) {
+    return null;
+  }
+};
+
+const getRefreshTokenCookieOptions = ({ req, frontendRedirectUri } = {}) => {
+  const frontendOrigin =
+    parseOrigin(frontendRedirectUri) ||
+    parseOrigin(req?.get("origin")) ||
+    parseOrigin(process.env.FRONTEND_URL);
+  const backendOrigin =
+    parseOrigin(resolveRequestOrigin(req)) ||
+    parseOrigin(process.env.BACKEND_URL || process.env.RENDER_EXTERNAL_URL);
+  const isCrossSite =
+    frontendOrigin &&
+    backendOrigin &&
+    getSiteKey(frontendOrigin) !== getSiteKey(backendOrigin);
+  const requiresCrossSiteCookie =
+    isCrossSite && !isLocalOrigin(frontendOrigin) && !isLocalOrigin(backendOrigin);
+
+  return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    path: "/", // Cookie available for all routes
-  });
+    secure: requiresCrossSiteCookie || process.env.NODE_ENV === "production",
+    sameSite: requiresCrossSiteCookie ? "none" : "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: "/",
+  };
+};
+
+// Helper to set refresh token cookie
+const setRefreshTokenCookie = (req, res, refreshToken, frontendRedirectUri) => {
+  res.cookie(
+    "refreshToken",
+    refreshToken,
+    getRefreshTokenCookieOptions({ req, frontendRedirectUri })
+  );
 };
 
 // @desc    Register user
@@ -123,7 +206,7 @@ const registerUser = async (req, res) => {
     const refreshToken = user.generateRefreshToken();
 
     // Set refresh token cookie
-    setRefreshTokenCookie(res, refreshToken);
+    setRefreshTokenCookie(req, res, refreshToken);
 
     res.status(201).json(buildAuthResponse(user, accessToken));
   } catch (error) {
@@ -162,7 +245,7 @@ const loginUser = async (req, res) => {
     const refreshToken = user.generateRefreshToken();
 
     // Set refresh token cookie
-    setRefreshTokenCookie(res, refreshToken);
+    setRefreshTokenCookie(req, res, refreshToken);
 
     res.status(200).json(buildAuthResponse(user, accessToken));
   } catch (error) {
@@ -294,7 +377,14 @@ const findOrCreateGoogleUser = async (googleProfile, role) => {
   return user;
 };
 
-const completeGoogleLogin = async ({ code, redirectUri, role, res }) => {
+const completeGoogleLogin = async ({
+  code,
+  redirectUri,
+  role,
+  req,
+  res,
+  frontendRedirectUri,
+}) => {
   const googleProfile = await exchangeCodeForGoogleProfile({
     code,
     redirectUri,
@@ -303,16 +393,24 @@ const completeGoogleLogin = async ({ code, redirectUri, role, res }) => {
   return completeGoogleProfileLogin({
     googleProfile,
     role,
+    req,
     res,
+    frontendRedirectUri,
   });
 };
 
-const completeGoogleProfileLogin = async ({ googleProfile, role, res }) => {
+const completeGoogleProfileLogin = async ({
+  googleProfile,
+  role,
+  req,
+  res,
+  frontendRedirectUri,
+}) => {
   const user = await findOrCreateGoogleUser(googleProfile, role);
   const accessToken = user.generateAccessToken();
   const refreshToken = user.generateRefreshToken();
 
-  setRefreshTokenCookie(res, refreshToken);
+  setRefreshTokenCookie(req, res, refreshToken, frontendRedirectUri);
 
   return buildAuthResponse(user, accessToken);
 };
@@ -338,6 +436,7 @@ const googleAuth = async (req, res) => {
       code,
       redirectUri,
       role,
+      req,
       res,
     });
 
@@ -394,16 +493,19 @@ const googleAuthCallback = async (req, res) => {
   }
 
   try {
-    await completeGoogleLogin({
+    const authResponse = await completeGoogleLogin({
       code: req.query.code,
       redirectUri: getGoogleCallbackUrl(req),
       role: statePayload?.role,
+      req,
       res,
+      frontendRedirectUri,
     });
 
     const successRedirectUrl = buildFrontendCallbackRedirect({
       frontendRedirectUri,
       status: "success",
+      authPayload: authResponse,
     });
 
     return res.redirect(successRedirectUrl);
@@ -472,11 +574,8 @@ const logoutUser = async (req, res) => {
   try {
     // Clear cookie
     res.cookie("refreshToken", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      ...getRefreshTokenCookieOptions({ req }),
       expires: new Date(0),
-      path: "/",
     });
 
     res.status(200).json({ message: "Logged out successfully" });

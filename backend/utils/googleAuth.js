@@ -35,6 +35,13 @@ const isAllowedFrontendOrigin = (origin) => {
     const parsedUrl = new URL(origin);
 
     if (
+      parsedUrl.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "::1"].includes(parsedUrl.hostname)
+    ) {
+      return true;
+    }
+
+    if (
       parsedUrl.protocol === "https:" &&
       parsedUrl.hostname.endsWith(".netlify.app")
     ) {
@@ -58,16 +65,16 @@ const resolveBackendBaseUrl = (req) => {
   const configuredBaseUrl =
     process.env.BACKEND_URL || process.env.RENDER_EXTERNAL_URL;
 
+  if (process.env.NODE_ENV !== "production" && req) {
+    return `${req.protocol}://${req.get("host")}`;
+  }
+
   if (configuredBaseUrl) {
     return configuredBaseUrl.replace(/\/+$/, "");
   }
 
   if (process.env.NODE_ENV === "production") {
     return DEFAULT_PRODUCTION_BACKEND_URL;
-  }
-
-  if (req) {
-    return `${req.protocol}://${req.get("host")}`;
   }
 
   return DEFAULT_PRODUCTION_BACKEND_URL;
@@ -199,6 +206,7 @@ const buildFrontendCallbackRedirect = ({
   status,
   error,
   errorDescription,
+  authPayload,
 }) => {
   const targetUrl = new URL(frontendRedirectUri);
 
@@ -212,6 +220,13 @@ const buildFrontendCallbackRedirect = ({
 
   if (errorDescription) {
     targetUrl.searchParams.set("error_description", errorDescription);
+  }
+
+  if (authPayload) {
+    targetUrl.searchParams.set(
+      "auth",
+      Buffer.from(JSON.stringify(authPayload)).toString("base64url")
+    );
   }
 
   return targetUrl.toString();

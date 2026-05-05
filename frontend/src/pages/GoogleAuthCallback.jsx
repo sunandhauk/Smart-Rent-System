@@ -38,9 +38,23 @@ const getProviderErrorMessage = (providerError, providerErrorDescription) => {
   return "Google sign-in failed.";
 };
 
+const decodeRedirectAuthPayload = (encodedAuthPayload) => {
+  if (!encodedAuthPayload) {
+    return null;
+  }
+
+  try {
+    const normalized = encodedAuthPayload.replace(/-/g, "+").replace(/_/g, "/");
+    const padding = normalized.length % 4 === 0 ? "" : "=".repeat(4 - (normalized.length % 4));
+    return JSON.parse(window.atob(`${normalized}${padding}`));
+  } catch (error) {
+    return null;
+  }
+};
+
 const GoogleAuthCallback = () => {
   const navigate = useNavigate();
-  const { completeOAuthRedirectLogin, googleAuth } = useAuth();
+  const { applyOAuthRedirectAuth, completeOAuthRedirectLogin, googleAuth } = useAuth();
   const [error, setError] = useState("");
   const hasProcessedAuth = useRef(false);
 
@@ -55,6 +69,7 @@ const GoogleAuthCallback = () => {
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
       const status = params.get("status");
+      const authPayload = decodeRedirectAuthPayload(params.get("auth"));
       const providerError = params.get("error");
       const providerErrorDescription = params.get("error_description");
 
@@ -66,6 +81,15 @@ const GoogleAuthCallback = () => {
       }
 
       if (status === "success") {
+        if (authPayload) {
+          const result = applyOAuthRedirectAuth(authPayload);
+
+          if (result.success) {
+            navigate("/", { replace: true });
+            return;
+          }
+        }
+
         const result = await completeOAuthRedirectLogin();
 
         if (result.success) {
